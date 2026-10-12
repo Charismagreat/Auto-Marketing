@@ -233,13 +233,22 @@ export default function DetailStudioPage() {
             <button
               onClick={async () => {
                 try {
+                  const targetProd = selectedProductId === 'all'
+                    ? { name: '전 메뉴 라인업 컬렉션' }
+                    : selectedProductId === 'bundle'
+                    ? { name: '시그니처 3종 베스트 세트' }
+                    : (products.find((p) => p.id === selectedProductId) || { name: '대표 메뉴' });
+                  const assetTitle = `[상세페이지] ${business?.name || '퐁신제빵소'} - ${targetProd.name} (860px)`;
                   const res = await fetch('/api/assets', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                      title: '퐁신 오리지널 대만 카스테라 860px 상세페이지',
+                      business_id: business?.id || 'biz_pongshin_baegot',
+                      title: assetTitle,
                       type: 'detail',
-                      codeContent: htmlCode,
+                      spec: '860px 모바일 최적화 이커머스 상세페이지 HTML',
+                      component_code: htmlCode,
+                      preview_url: customImageUrl || products[0]?.image_url || 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80',
                       costTokens: 2000,
                     }),
                   });

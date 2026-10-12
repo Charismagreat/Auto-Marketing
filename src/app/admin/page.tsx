@@ -837,15 +837,23 @@ export default function AdminPage() {
                               {log.user_name || log.user_id}
                             </td>
                             <td className="py-3 px-3 whitespace-nowrap">
-                              <span
-                                className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                                  isCredit
-                                    ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
-                                    : 'bg-rose-50 text-rose-700 border-rose-200'
-                                }`}
-                              >
-                                {isCredit ? '➕ 수동 지급' : '➖ 수동 차감'}
-                              </span>
+                              {(() => {
+                                const isCredit = log.type === 'CREDIT' || (!log.type?.includes('USAGE') && Number(log.amount) > 0);
+                                const isUsage = log.type === 'USAGE' || log.reason?.includes('번들') || log.reason?.includes('에셋');
+                                return (
+                                  <span
+                                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                      isCredit
+                                        ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                                        : isUsage
+                                        ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                        : 'bg-rose-50 text-rose-700 border-rose-200'
+                                    }`}
+                                  >
+                                    {isCredit ? '➕ 지급' : isUsage ? '⚡ 번들/에셋 차감' : '➖ 차감'}
+                                  </span>
+                                );
+                              })()}
                             </td>
                             <td className="py-3 px-3 font-mono font-bold whitespace-nowrap">
                               <span className={isCredit ? 'text-indigo-600' : 'text-rose-600'}>

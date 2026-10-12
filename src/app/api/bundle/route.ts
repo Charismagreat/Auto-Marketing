@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { callAiCaller, insertRows, queryTable } from '@/lib/egdesk-helpers';
+import { callAiCaller, insertRows, queryTable, updateRows } from '@/lib/egdesk-helpers';
 
 /**
  * 1-Click 마케팅 풀 패키지 일괄 생성 API (Auto Marketing 7-Channel Bundle)
@@ -288,6 +288,52 @@ ${isAllMode ? '네이버 지도 방문객을 위한 퐁신제빵소 전 메뉴 �
 
     // 5. auto_assets 일괄 INSERT
     await insertRows('auto_assets', createdAssets);
+
+    // 6. 토큰 차감 (auto_users) 및 감사 로그 (auto_token_logs, ai_token_usage_logs)
+    const costTokens = 5000; // 7대 채널 번들 일괄 생성 비용
+    const targetUserId = business.user_id || body.userId || 'usr_pongshin_master';
+    try {
+      const uRes = await queryTable('auto_users', { filters: { id: targetUserId }, limit: 1 }).catch(() => ({ rows: [] }));
+      const user = uRes?.rows?.[0];
+      if (user) {
+        const curBal = Number(user.token_balance || 0);
+        const newBal = Math.max(0, curBal - costTokens);
+        await updateRows('auto_users', {
+          token_balance: newBal,
+          updated_at: now,
+        }, {
+          filters: { id: targetUserId },
+        });
+
+        // 토큰 감사 대장 기록
+        await insertRows('auto_token_logs', [{
+          id: `tlog_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          user_id: targetUserId,
+          user_name: user.name || bizName,
+          type: 'USAGE',
+          amount: -costTokens,
+          balance_after: newBal,
+          reason: `[1-Click 번들] ${isAllMode ? '전 메뉴 라인업' : isBundleMode ? '시그니처 3종 베스트 세트' : prodName} 7대 에셋 일괄 생성`,
+          admin_name: 'AI 오토파일럿 엔진',
+          created_at: now,
+        }]).catch(() => {});
+
+        // AI 소비 로그 대장 기록
+        await insertRows('ai_token_usage_logs', [{
+          id: `ai_log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          user_id: targetUserId,
+          model: 'gemini-3.8-flash',
+          prompt_tokens: 3500,
+          completion_tokens: 1500,
+          total_tokens: 5000,
+          cost_points: 5000,
+          endpoint: '/api/bundle',
+          created_at: now,
+        }]).catch(() => {});
+      }
+    } catch (tokenErr) {
+      console.warn('Bundle token deduct error:', tokenErr);
+    }
 
     const elapsedSeconds = ((Date.now() - startTime) / 1000).toFixed(1);
 

@@ -42,7 +42,8 @@ export async function POST(req: NextRequest) {
 
 [매장명]: ${business.name}
 [업종]: ${business.category}
-[대표 상품]: ${products.map((p: any) => `${p.name}(${p.price}원)`).join(', ')}
+[대표 상품 및 라인업]: ${products.map((p: any) => `${p.name}(${p.price}원)`).join(', ')}
+[기획 가이드]: 단품 홍보뿐만 아니라 주중/주말에 매장 전 메뉴 라인업 소개 및 시그니처 3종 묶음 세트(세트 할인 혜택) 프로모션 일정도 요일별 전략에 맞춰 골고루 기획해 주세요.
 
 반드시 아래 JSON 포맷으로만 응답하세요:
 {

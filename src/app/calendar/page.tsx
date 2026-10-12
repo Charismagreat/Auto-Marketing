@@ -22,6 +22,7 @@ import {
   Send,
   X,
 } from 'lucide-react';
+import Footer from '@/components/Footer';
 
 export default function CalendarPage() {
   const [campaigns, setCampaigns] = useState<any[]>([]);
@@ -376,6 +377,9 @@ export default function CalendarPage() {
         )}
 
       </main>
+
+      {/* 푸터 영역 */}
+      <Footer />
 
       {/* 새 일정 추가 모달 */}
       {showAddModal && (

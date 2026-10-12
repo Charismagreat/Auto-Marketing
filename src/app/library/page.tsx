@@ -23,6 +23,7 @@ import {
   Search,
   Download,
 } from 'lucide-react';
+import Footer from '@/components/Footer';
 
 interface Asset {
   id: string;
@@ -411,6 +412,9 @@ export default function AssetLibraryPage() {
         )}
 
       </main>
+
+      {/* 푸터 영역 */}
+      <Footer />
 
       {/* 에셋 실물 상세 미리보기 모달 */}
       {previewModalOpen && selectedAsset && (

@@ -22,6 +22,7 @@ import {
   Music,
   Palette,
 } from 'lucide-react';
+import Footer from '@/components/Footer';
 
 export default function ReferencesPage() {
   const [activeTab, setActiveTab] = useState<'curated' | 'my'>('curated');
@@ -416,6 +417,9 @@ export default function ReferencesPage() {
           </div>
         </div>
       </main>
+
+      {/* 푸터 영역 */}
+      <Footer />
     </div>
   );
 }

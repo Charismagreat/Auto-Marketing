@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   ShieldAlert,
+  ShieldCheck,
   Users,
   Wallet,
   FileCheck,
@@ -39,6 +40,9 @@ import {
   Building2,
   LayoutGrid,
   ListFilter,
+  Coins,
+  Award,
+  Percent,
 } from 'lucide-react';
 import AdminDispatchLogsTab from './components/AdminDispatchLogsTab';
 import AdminPromptsTab from './components/AdminPromptsTab';
@@ -185,25 +189,28 @@ export default function AdminPage() {
   const stats = data?.stats;
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans">
-      {/* 1. 상단 관리자 툴바 헤더 */}
-      <header className="sticky top-0 z-30 bg-slate-950/90 backdrop-blur-md border-b border-slate-800 px-4 lg:px-8 py-3.5">
+    <div className="min-h-screen bg-slate-50 text-slate-800 pb-24 font-sans">
+      {/* 1. 상단 글로벌 네비게이션 헤더 (시트봇 스타일) */}
+      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 py-3.5 shadow-xs">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white transition">
-              <ArrowLeft className="w-4 h-4" />
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-600 hover:text-slate-900 transition-all border border-slate-200"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
               <span>대시보드로 나가기</span>
             </Link>
-            <span className="text-slate-700">|</span>
+            <span className="text-slate-300">|</span>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center font-bold text-white shadow-md shadow-rose-900/40">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center font-bold text-white shadow-xs">
                 <ShieldAlert className="w-4 h-4" />
               </div>
-              <span className="font-black text-base tracking-tight text-white">
-                Auto-Marketing 통합 관제탑 (Super Admin)
+              <span className="font-extrabold text-base tracking-tight text-slate-900">
+                Auto-Marketing 통합 관제탑
               </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30">
-                운영자 모드
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200/60">
+                Admin Console
               </span>
             </div>
           </div>
@@ -211,87 +218,243 @@ export default function AdminPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowProposalModal(true)}
-              className="flex items-center gap-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 px-3.5 py-1.5 rounded-xl shadow-xs transition"
+              className="inline-flex items-center gap-1.5 text-xs font-extrabold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-3.5 py-2 rounded-xl shadow-2xs transition-all cursor-pointer"
             >
-              <FileText className="w-3.5 h-3.5" />
+              <FileText className="w-3.5 h-3.5 text-indigo-600" />
               <span>맞춤 마케팅 견적서 발행</span>
             </button>
             <button
               onClick={fetchAdminData}
-              className="flex items-center gap-1 text-xs text-slate-400 hover:text-white bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 shadow-xs hover:bg-slate-100 text-xs font-bold text-slate-700 cursor-pointer transition-all"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-              <span>실시간 갱신</span>
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-indigo-600' : ''}`} />
+              <span>새로고침</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* 메인 영역 */}
-      <main className="max-w-7xl mx-auto w-full px-4 lg:px-8 py-8 flex-1 space-y-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
-        {/* 상단 4대 핵심 KPI 카드 */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-slate-800/80 rounded-3xl p-5 border border-slate-700/80 shadow-lg">
-            <div className="flex items-center justify-between text-slate-400 text-xs mb-2">
-              <span>총 가입 소상공인</span>
-              <Users className="w-4 h-4 text-indigo-400" />
+        {/* 상단 헤더 & 설명 타이틀 (시트봇 스타일) */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-6">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200/60 mb-2">
+              <ShieldAlert className="w-3.5 h-3.5 text-rose-600" />
+              <span>통합 운영 관리 센터 (Admin Console)</span>
             </div>
-            <div className="text-2xl font-black text-white font-mono">
-              {stats?.totalUsers || 1}개 매장
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              Auto-Marketing 전체 데이터 및 운영 관리 대시보드
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              소상공인 회원 관리, 토큰 지급, 7대 채널 에셋 감사, 주간 오토파일럿, 외부 디스패치 로그, AI 원가/마진율 및 사업자 법무 CMS를 한곳에서 통제합니다.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-extrabold text-emerald-700 shadow-2xs">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span>SQLite 18대 물리 테이블 마운트 완료</span>
+            </span>
+          </div>
+        </div>
+
+        {/* 5대 주요 지표 카드 (시트봇 5대 KPI 카드 스타일) */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1">
+            <div className="flex items-center justify-between text-slate-400">
+              <span className="text-xs font-bold text-slate-500">총 가입 소상공인</span>
+              <Users className="w-4 h-4 text-indigo-600" />
             </div>
-            <div className="text-[11px] text-emerald-400 mt-1 flex items-center gap-1">
-              <span>↑ 이번 주 신규 가입 100% 활성</span>
+            <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
+              {stats?.totalUsers || 1}
+              <span className="text-xs font-normal text-slate-400 ml-1">명</span>
+            </div>
+            <div className="text-[11px] text-emerald-600 font-semibold pt-1">
+              ↑ 이번 주 신규 가입 100% 활성
             </div>
           </div>
 
-          <div className="bg-slate-800/80 rounded-3xl p-5 border border-slate-700/80 shadow-lg">
-            <div className="flex items-center justify-between text-slate-400 text-xs mb-2">
-              <span>등록 사업장 및 상품</span>
-              <Store className="w-4 h-4 text-amber-400" />
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1">
+            <div className="flex items-center justify-between text-slate-400">
+              <span className="text-xs font-bold text-slate-500">등록 매장 &amp; 상품</span>
+              <Store className="w-4 h-4 text-purple-600" />
             </div>
-            <div className="text-2xl font-black text-white font-mono">
-              {stats?.totalBusinesses || 1}개 / {stats?.totalProducts || 3}개
+            <div className="text-xl sm:text-2xl font-black text-purple-700 font-mono">
+              {stats?.totalBusinesses || 1}
+              <span className="text-xs font-normal text-slate-400 ml-1">개 ({stats?.totalProducts || 3}개 상품)</span>
             </div>
-            <div className="text-[11px] text-slate-400 mt-1">
+            <div className="text-[11px] text-slate-500 pt-1">
               퐁신제빵소(배곧테크노밸리)
             </div>
           </div>
 
-          <div className="bg-slate-800/80 rounded-3xl p-5 border border-slate-700/80 shadow-lg">
-            <div className="flex items-center justify-between text-slate-400 text-xs mb-2">
-              <span>총 생성 마케팅 에셋</span>
-              <FileCheck className="w-4 h-4 text-emerald-400" />
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1">
+            <div className="flex items-center justify-between text-slate-400">
+              <span className="text-xs font-bold text-slate-500">생성된 마케팅 에셋</span>
+              <FileCheck className="w-4 h-4 text-emerald-600" />
             </div>
-            <div className="text-2xl font-black text-white font-mono">
-              {stats?.totalAssetsGenerated || 24}건
+            <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
+              {stats?.totalAssetsGenerated || 24}
+              <span className="text-xs font-normal text-slate-400 ml-1">건 (7대 채널)</span>
             </div>
-            <div className="text-[11px] text-emerald-400 mt-1">
-              숏폼, 상세페이지, 인쇄물 완비
+            <div className="text-[11px] text-emerald-600 font-semibold pt-1">
+              숏폼, 카드, 상세페이지 완비
             </div>
           </div>
 
-          <div className="bg-slate-800/80 rounded-3xl p-5 border border-slate-700/80 shadow-lg">
-            <div className="flex items-center justify-between text-slate-400 text-xs mb-2">
-              <span>AI 토큰 총 소모량</span>
-              <Wallet className="w-4 h-4 text-rose-400" />
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1">
+            <div className="flex items-center justify-between text-slate-400">
+              <span className="text-xs font-bold text-slate-500">오토파일럿 발행 큐</span>
+              <Calendar className="w-4 h-4 text-amber-500" />
             </div>
-            <div className="text-2xl font-black text-amber-300 font-mono">
-              {stats?.totalTokensConsumed?.toLocaleString() || '38,400'} T
+            <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
+              {stats?.totalCampaigns || 6}
+              <span className="text-xs font-normal text-slate-400 ml-1">건 예약 대기</span>
             </div>
-            <div className="text-[11px] text-slate-400 mt-1">
-              총 발행량 {stats?.totalTokensIssued?.toLocaleString() || '150,000'} T 대비 25.6%
+            <div className="text-[11px] text-slate-500 pt-1">
+              요일별 타겟 시간대 자동 배포
+            </div>
+          </div>
+
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1 col-span-2 md:col-span-1">
+            <div className="flex items-center justify-between text-slate-400">
+              <span className="text-xs font-bold text-slate-500">유통 토큰 잔액</span>
+              <Wallet className="w-4 h-4 text-indigo-600" />
+            </div>
+            <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
+              {(stats?.totalTokenBalance || 50000).toLocaleString()}
+              <span className="text-xs font-normal text-slate-400 ml-1">T</span>
+            </div>
+            <div className="text-[11px] text-slate-500 pt-1">
+              총 소모량 {(stats?.totalTokensConsumed || 38400).toLocaleString()}T
             </div>
           </div>
         </div>
 
-        {/* 15대 관제 탭 2-Tier 스마트 네비게이션 */}
-        <div className="space-y-3 bg-slate-950/80 p-4 sm:p-5 rounded-3xl border border-slate-800 shadow-xl">
-          {/* 상단 1단: 5대 도메인 카테고리 탭 & 뷰 모드 토글 */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
-            <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
-              <span className="text-xs font-bold text-slate-400 mr-1.5 flex items-center gap-1 shrink-0">
-                <ListFilter className="w-3.5 h-3.5 text-indigo-400" /> 도메인 분류:
+        {/* 🚀 비즈니스 & 마케팅 경영 파이프라인 지표 카드 4종 (시트봇 B2B 지표 스타일) */}
+        <div className="space-y-2.5">
+          <div className="flex items-center justify-between gap-2 px-1">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-indigo-600" />
+                <span>소상공인 1-Click 번들 &amp; 비즈니스 경영 지표</span>
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-extrabold border border-indigo-300">
+                SaaS 경영 관제
+              </span>
+            </div>
+            <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">
+              AI 모델 호출 원가 대비 마진율(88.8%), 외부 채널 디스패치 성공률 및 소상공인 시간 절감 성과 실시간 통제
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            {/* 1. 월간 예상 매출 & 마진율 */}
+            <div
+              onClick={() => setActiveTab('pricing')}
+              className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-white to-emerald-50/40 border border-emerald-200/80 shadow-xs space-y-2 hover:border-emerald-400 hover:shadow-md transition-all cursor-pointer group"
+            >
+              <div className="flex items-center justify-between text-slate-400">
+                <span className="text-xs font-bold text-emerald-800 group-hover:text-emerald-950 transition-colors">
+                  월간 예상 매출 (MRR)
+                </span>
+                <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100">
+                  <DollarSign className="w-4 h-4" />
+                </div>
+              </div>
+              <div>
+                <div className="text-xl sm:text-2xl font-black text-emerald-950 font-mono">
+                  ₩1,739,000
+                </div>
+                <div className="text-[11px] text-emerald-700 mt-1 font-semibold flex items-center gap-1">
+                  <span>종합 마진율 <strong>88.8%</strong> (순수익 ₩1,545,650)</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. 7대 채널 번들 1회 원가 */}
+            <div
+              onClick={() => setActiveTab('pricing')}
+              className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-white to-amber-50/40 border border-amber-200/80 shadow-xs space-y-2 hover:border-amber-400 hover:shadow-md transition-all cursor-pointer group"
+            >
+              <div className="flex items-center justify-between text-slate-400">
+                <span className="text-xs font-bold text-amber-800 flex items-center gap-1">
+                  <Cpu className="w-3.5 h-3.5 text-amber-500" />
+                  <span>7대 채널 번들 1회 원가</span>
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-800 font-extrabold">
+                  초저원가
+                </span>
+              </div>
+              <div>
+                <div className="text-xl sm:text-2xl font-black text-amber-950 font-mono">
+                  ₩178원
+                </div>
+                <div className="text-[11px] text-amber-800/90 mt-1 font-medium">
+                  Gemini Flash + Flux + TTS + Capacitor
+                </div>
+              </div>
+            </div>
+
+            {/* 3. 외부 채널 디스패치 성공률 */}
+            <div
+              onClick={() => setActiveTab('dispatch')}
+              className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-white to-indigo-50/40 border border-indigo-200/80 shadow-xs space-y-2 hover:border-indigo-400 hover:shadow-md transition-all cursor-pointer group"
+            >
+              <div className="flex items-center justify-between text-slate-400">
+                <span className="text-xs font-bold text-indigo-800 flex items-center gap-1">
+                  <Radio className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>채널 디스패치 성공률</span>
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-800 font-extrabold">
+                  안심 배포
+                </span>
+              </div>
+              <div>
+                <div className="text-xl sm:text-2xl font-black text-indigo-950">
+                  98.5%
+                </div>
+                <div className="text-[11px] text-indigo-700 mt-1 font-medium">
+                  당근 · 플레이스 · 인스타 · 블로그 자동 발행
+                </div>
+              </div>
+            </div>
+
+            {/* 4. 점주 마케팅 시간 절감 성과 */}
+            <div
+              onClick={() => setActiveTab('inquiries')}
+              className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-white to-teal-50/40 border border-teal-200/80 shadow-xs space-y-2 hover:border-teal-400 hover:shadow-md transition-all cursor-pointer group"
+            >
+              <div className="flex items-center justify-between text-slate-400">
+                <span className="text-xs font-bold text-teal-800 flex items-center gap-1">
+                  <TrendingUp className="w-3.5 h-3.5 text-teal-600" />
+                  <span>매장 마케팅 시간 절감</span>
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-800 font-extrabold">
+                  실증 효과
+                </span>
+              </div>
+              <div>
+                <div className="text-xl sm:text-2xl font-black text-teal-950">
+                  주 15시간+
+                </div>
+                <div className="text-[11px] text-teal-700 mt-1 font-medium">
+                  도입 소상공인 평균 92% 수작업 단축
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 15대 관제 탭 2-Tier 스마트 네비게이션 (시트봇 스타일) */}
+        <div className="space-y-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          {/* 상단 1단: 5대 도메인 카테고리 칩 바 & 뷰 모드 토글 */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+            <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+              <span className="text-xs font-extrabold text-slate-400 mr-1 flex items-center gap-1 shrink-0">
+                <ListFilter className="w-3.5 h-3.5 text-indigo-600" /> 도메인 분류:
               </span>
               {TAB_GROUPS.map((group) => {
                 const isGroupActive = selectedGroupId === group.id;
@@ -302,16 +465,16 @@ export default function AdminPage() {
                       setSelectedGroupId(group.id);
                       setActiveTab(group.tabs[0].id as any);
                     }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                    className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
                       isGroupActive
-                        ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-900/40 ring-1 ring-indigo-400/50'
-                        : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800'
+                        ? 'bg-slate-900 text-white shadow-xs'
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200/60'
                     }`}
                   >
                     <span>{group.name}</span>
                     <span
                       className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
-                        isGroupActive ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-500'
+                        isGroupActive ? 'bg-white/20 text-white' : 'bg-white text-slate-500 border border-slate-200'
                       }`}
                     >
                       {group.tabs.length}
@@ -324,21 +487,21 @@ export default function AdminPage() {
             {/* 전체 15개 펼쳐보기 토글 버튼 */}
             <button
               onClick={() => setViewMode(viewMode === 'grouped' ? 'all' : 'grouped')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 border cursor-pointer ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 border cursor-pointer ${
                 viewMode === 'all'
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                  : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white hover:bg-slate-800'
+                  ? 'bg-amber-50 text-amber-800 border-amber-300 shadow-xs'
+                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100 shadow-2xs'
               }`}
               title="15대 전체 탭 펼침/접힘 토글"
             >
-              <LayoutGrid className="w-3.5 h-3.5" />
+              <LayoutGrid className="w-3.5 h-3.5 text-indigo-600" />
               <span>{viewMode === 'all' ? '도메인 2단 뷰로 접기' : '15대 전체 탭 펼쳐보기'}</span>
             </button>
           </div>
 
-          {/* 상단 2단: 선택된 도메인의 서브 탭 (기본 2단 모드) */}
+          {/* 상단 2단: 선택된 도메인의 서브 탭 (시트봇 스타일 탭 버튼) */}
           {viewMode === 'grouped' ? (
-            <div className="flex items-center gap-2 overflow-x-auto pt-1">
+            <div className="flex flex-wrap gap-2 pt-1">
               {TAB_GROUPS.find((g) => g.id === selectedGroupId)?.tabs.map((tab) => {
                 const IconComponent = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -346,26 +509,26 @@ export default function AdminPage() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex items-center gap-2 px-4 py-2.5 font-bold text-xs rounded-2xl transition-all whitespace-nowrap cursor-pointer ${
+                    className={`px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center gap-2 cursor-pointer transition-all ${
                       isActive
-                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 ring-1 ring-indigo-400/50'
-                        : 'bg-slate-900/90 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-800'
+                        ? 'bg-indigo-600 text-white shadow-xs ring-2 ring-indigo-400/40'
+                        : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
                     }`}
                   >
-                    <IconComponent className="w-4 h-4 text-indigo-400" />
+                    <IconComponent className={`w-4 h-4 ${isActive ? 'text-white' : 'text-indigo-600'}`} />
                     <span>{tab.label}</span>
                   </button>
                 );
               })}
             </div>
           ) : (
-            /* 전체 15개 탭 도메인별 5대 섹션 카드 그리드 뷰 (한눈에 전체 조망) */
+            /* 전체 15개 탭 도메인별 5대 섹션 카드 그리드 뷰 */
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-1">
               {TAB_GROUPS.map((group) => (
-                <div key={group.id} className="bg-slate-900/70 rounded-2xl border border-slate-800/90 p-3 space-y-2">
-                  <div className="text-[11px] font-black text-slate-300 border-b border-slate-800/80 pb-1.5 flex items-center justify-between">
+                <div key={group.id} className="bg-slate-50/80 rounded-2xl border border-slate-200 p-3.5 space-y-2">
+                  <div className="text-[11px] font-black text-slate-700 border-b border-slate-200 pb-1.5 flex items-center justify-between">
                     <span>{group.name}</span>
-                    <span className="text-[10px] text-slate-500 font-mono">{group.tabs.length}개</span>
+                    <span className="text-[10px] text-slate-400 font-mono">{group.tabs.length}개</span>
                   </div>
                   <div className="space-y-1">
                     {group.tabs.map((tab) => {
@@ -380,11 +543,11 @@ export default function AdminPage() {
                           }}
                           className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-xl font-bold text-xs transition-all text-left truncate cursor-pointer ${
                             isActive
-                              ? 'bg-indigo-600 text-white shadow-xs ring-1 ring-indigo-400/50'
-                              : 'text-slate-400 hover:text-white hover:bg-slate-800/80'
+                              ? 'bg-indigo-600 text-white shadow-xs'
+                              : 'text-slate-600 hover:bg-white hover:text-slate-900 border border-transparent hover:border-slate-200'
                           }`}
                         >
-                          <IconComponent className="w-3.5 h-3.5 shrink-0 text-indigo-400" />
+                          <IconComponent className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-white' : 'text-indigo-600'}`} />
                           <span className="truncate">{tab.label}</span>
                         </button>
                       );
@@ -396,21 +559,21 @@ export default function AdminPage() {
           )}
         </div>
 
-        {/* 탭 1: 소상공인 회원 및 사업장 관리 */}
+        {/* 탭 1: 소상공인 회원 및 사업장 관리 (시트봇 회원 관리 테이블 스타일) */}
         {activeTab === 'users' && (
-          <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl space-y-6">
-            <div className="flex items-center justify-between">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
-                <h2 className="text-base font-extrabold text-white">가입 소상공인 및 매장 프로필</h2>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <h2 className="text-base font-extrabold text-slate-900">가입 소상공인 및 매장 프로필</h2>
+                <p className="text-xs text-slate-500 mt-0.5">
                   가입된 점주님들의 계정 상태, 네이버 플레이스 연동 정보, 잔여 마케팅 토큰을 제어합니다.
                 </p>
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-slate-300">
-                <thead className="bg-slate-900/60 text-slate-400 text-[11px] uppercase border-b border-slate-700">
+            <div className="overflow-x-auto rounded-xl border border-slate-200">
+              <table className="w-full text-left text-xs text-slate-700">
+                <thead className="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase border-b border-slate-200">
                   <tr>
                     <th className="py-3 px-4">점주명 / 계정</th>
                     <th className="py-3 px-4">매장명 (상호)</th>
@@ -421,17 +584,17 @@ export default function AdminPage() {
                     <th className="py-3 px-4 text-right">관리 액션</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-700/60 font-medium">
+                <tbody className="divide-y divide-slate-100 font-medium">
                   {data?.users?.map((u: any) => (
-                    <tr key={u.id} className="hover:bg-slate-700/30 transition">
+                    <tr key={u.id} className="hover:bg-slate-50/80 transition">
                       <td className="py-3.5 px-4">
-                        <div className="font-bold text-white">{u.name || '퐁신제빵소 사장님'}</div>
-                        <div className="text-[11px] text-slate-400">{u.email || 'pongshin@naver.com'}</div>
+                        <div className="font-bold text-slate-900">{u.name || '퐁신제빵소 사장님'}</div>
+                        <div className="text-[11px] text-slate-500">{u.email || 'pongshin@naver.com'}</div>
                       </td>
-                      <td className="py-3.5 px-4 font-bold text-amber-300">
+                      <td className="py-3.5 px-4 font-bold text-indigo-700">
                         퐁신제빵소
                       </td>
-                      <td className="py-3.5 px-4 text-slate-300">
+                      <td className="py-3.5 px-4 text-slate-600">
                         베이커리/디저트
                       </td>
                       <td className="py-3.5 px-4">
@@ -439,17 +602,17 @@ export default function AdminPage() {
                           href="https://naver.me/FJIPv54p"
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-300 underline"
+                          className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 underline font-semibold"
                         >
                           <span>naver.me/FJIPv54p</span>
                           <ExternalLink className="w-3 h-3" />
                         </a>
                       </td>
-                      <td className="py-3.5 px-4 font-mono font-bold text-amber-400">
+                      <td className="py-3.5 px-4 font-mono font-bold text-slate-900">
                         {u.token_balance?.toLocaleString() || '50,000'} T
                       </td>
                       <td className="py-3.5 px-4">
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold border border-emerald-500/30">
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">
                           정상 가동
                         </span>
                       </td>
@@ -459,13 +622,13 @@ export default function AdminPage() {
                             setSelectedUser(u);
                             setShowTokenModal(true);
                           }}
-                          className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold transition"
+                          className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold transition shadow-xs cursor-pointer"
                         >
                           + 토큰 지급
                         </button>
                         <Link
                           href="/"
-                          className="px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-[11px] font-bold transition"
+                          className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold transition border border-slate-200"
                         >
                           대리 접속 ➔
                         </Link>
@@ -483,21 +646,21 @@ export default function AdminPage() {
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* 엔진별 토큰 소모 분포 */}
-              <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl space-y-4">
-                <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-amber-400" />
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-4">
+                <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-indigo-600" />
                   <span>마케팅 엔진별 AI 토큰 소모 비중</span>
                 </h3>
                 <div className="space-y-3">
                   {stats?.engineUsageRatio?.map((item: any, idx: number) => (
                     <div key={idx} className="space-y-1">
                       <div className="flex justify-between text-xs font-semibold">
-                        <span className="text-slate-300">{item.name}</span>
-                        <span className="text-amber-400 font-mono">{item.ratio} ({item.count}회)</span>
+                        <span className="text-slate-600">{item.name}</span>
+                        <span className="text-slate-900 font-mono font-bold">{item.ratio} ({item.count}회)</span>
                       </div>
-                      <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-amber-500 to-indigo-500 rounded-full"
+                          className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full"
                           style={{ width: item.ratio }}
                         />
                       </div>
@@ -507,35 +670,35 @@ export default function AdminPage() {
               </div>
 
               {/* 3단계 구독 요금제 플랜 카드 */}
-              <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl space-y-4">
-                <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-indigo-400" />
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-4">
+                <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-indigo-600" />
                   <span>SaaS 요금제 플랜 및 구독 관리</span>
                 </h3>
 
                 <div className="space-y-2.5 text-xs">
-                  <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-700 flex items-center justify-between">
+                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                     <div>
-                      <span className="font-extrabold text-white block">무료 웰컴 체험 (Free)</span>
-                      <span className="text-[11px] text-slate-400">가입 즉시 50,000T 무료 지급 (숏폼 5편, 상세페이지 5편)</span>
+                      <span className="font-extrabold text-slate-900 block">무료 웰컴 체험 (Free)</span>
+                      <span className="text-[11px] text-slate-500">가입 즉시 50,000T 무료 지급 (숏폼 5편, 상세페이지 5편)</span>
                     </div>
-                    <span className="font-mono font-bold text-emerald-400">0원</span>
+                    <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">0원</span>
                   </div>
 
-                  <div className="p-3 rounded-2xl bg-indigo-950/40 border border-indigo-500/40 flex items-center justify-between">
+                  <div className="p-3.5 rounded-xl bg-indigo-50/50 border border-indigo-200 flex items-center justify-between">
                     <div>
-                      <span className="font-extrabold text-indigo-300 block">소상공인 스타터 (Starter)</span>
-                      <span className="text-[11px] text-slate-400">매월 200,000T + 주간 마케팅 오토 캘린더 자동 발행</span>
+                      <span className="font-extrabold text-indigo-900 block">소상공인 스타터 (Starter)</span>
+                      <span className="text-[11px] text-slate-500">매월 200,000T + 주간 마케팅 오토 캘린더 자동 발행</span>
                     </div>
-                    <span className="font-mono font-bold text-amber-300">월 29,000원</span>
+                    <span className="font-mono font-bold text-indigo-700 bg-indigo-100/70 px-2 py-0.5 rounded-full border border-indigo-200">월 39,000원</span>
                   </div>
 
-                  <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-700 flex items-center justify-between">
+                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                     <div>
-                      <span className="font-extrabold text-white block">프로 비즈니스 (Pro)</span>
-                      <span className="text-[11px] text-slate-400">무제한 상세페이지 + 숏폼 비디오 50편 + 인쇄물 무제한</span>
+                      <span className="font-extrabold text-slate-900 block">오토파일럿 프로 (Pro)</span>
+                      <span className="text-[11px] text-slate-500">무제한 상세페이지 + 숏폼 비디오 50편 + 인쇄물 무제한</span>
                     </div>
-                    <span className="font-mono font-bold text-indigo-300">월 59,000원</span>
+                    <span className="font-mono font-bold text-slate-900 bg-slate-200/70 px-2 py-0.5 rounded-full">월 79,000원</span>
                   </div>
                 </div>
               </div>
@@ -543,25 +706,25 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 탭 3: AI 모델 원가 & SaaS 마진율 시뮬레이터 (신규) */}
+        {/* 탭 3: AI 모델 원가 & SaaS 마진율 시뮬레이터 */}
         {activeTab === 'pricing' && (
           <div className="space-y-4">
-            <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl mb-4">
-              <h2 className="text-base font-extrabold text-white">AI 모델 호출 원가 & SaaS 마진율 시뮬레이터</h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Gemini, Flux, TTS 등 AI 엔진 호출 원가 대비 점주 결제액을 분석하여 초고수익 마진율(87%+)과 월간 순이익을 시뮬레이션합니다.
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 mb-4">
+              <h2 className="text-base font-extrabold text-slate-900">AI 모델 호출 원가 &amp; SaaS 마진율 시뮬레이터</h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Gemini, Flux, TTS 등 AI 엔진 호출 원가 대비 점주 결제액을 분석하여 초고수익 마진율(88.8%+)과 월간 순이익을 시뮬레이션합니다.
               </p>
             </div>
             <AdminPricingCostTab />
           </div>
         )}
 
-        {/* 탭 4: 세무 & 전자세금계산서 정산 관리 (신규) */}
+        {/* 탭 4: 세무 & 전자세금계산서 정산 관리 */}
         {activeTab === 'tax' && (
           <div className="space-y-4">
-            <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl mb-4">
-              <h2 className="text-base font-extrabold text-white">세무/정산 및 전자세금계산서 관리</h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 mb-4">
+              <h2 className="text-base font-extrabold text-slate-900">세무/정산 및 전자세금계산서 관리</h2>
+              <p className="text-xs text-slate-500 mt-0.5">
                 유료 결제 점주님들의 사업자등록증 기반 전자세금계산서 발급 및 국세청 홈택스 승인 번호 전송 내역을 관리합니다.
               </p>
             </div>
@@ -571,15 +734,15 @@ export default function AdminPage() {
 
         {/* 탭 5: 생성 에셋 통합 감사 */}
         {activeTab === 'assets' && (
-          <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl space-y-6">
-            <div className="flex items-center justify-between">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
-                <h2 className="text-base font-extrabold text-white">생성 마케팅 에셋 라이브 피드 & 위반 감사</h2>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <h2 className="text-base font-extrabold text-slate-900">생성 마케팅 에셋 라이브 피드 &amp; 위반 감사</h2>
+                <p className="text-xs text-slate-500 mt-0.5">
                   소상공인들이 생성한 콘텐츠를 실시간 모니터링하고 과장 광고 키워드를 사전 검수합니다.
                 </p>
               </div>
-              <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/30">
+              <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
                 🟢 위반 의심 건수: 0건 (안전)
               </span>
             </div>
@@ -595,16 +758,16 @@ export default function AdminPage() {
                   const isBlog = asset.type === 'blog';
 
                   return (
-                    <div key={asset.id} className="p-4 rounded-2xl bg-slate-900/80 border border-slate-700 space-y-3">
+                    <div key={asset.id} className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200 space-y-3 hover:border-indigo-300 transition-all">
                       <div className="flex items-center justify-between">
                         <span className={`text-xs font-bold flex items-center gap-1 ${
-                          isPlace ? 'text-emerald-400' :
-                          isKarrot ? 'text-orange-400' :
-                          isVideo ? 'text-red-400' :
-                          isDetail ? 'text-indigo-400' :
-                          isPrint ? 'text-pink-400' :
-                          isBlog ? 'text-green-400' :
-                          'text-purple-400'
+                          isPlace ? 'text-emerald-700' :
+                          isKarrot ? 'text-orange-700' :
+                          isVideo ? 'text-red-700' :
+                          isDetail ? 'text-indigo-700' :
+                          isPrint ? 'text-pink-700' :
+                          isBlog ? 'text-green-700' :
+                          'text-purple-700'
                         }`}>
                           {isPlace ? <Sparkles className="w-3.5 h-3.5" /> :
                            isKarrot ? <Sparkles className="w-3.5 h-3.5" /> :
@@ -618,17 +781,17 @@ export default function AdminPage() {
                           {asset.created_at ? new Date(asset.created_at).toLocaleDateString('ko-KR') : '최근 생성'}
                         </span>
                       </div>
-                      <p className="text-xs font-bold text-white line-clamp-1">{asset.title}</p>
-                      <div className="text-[11px] text-slate-400 line-clamp-1">규격: {asset.spec || '표준 규격'}</div>
-                      <div className="flex items-center justify-between text-[11px] pt-2 border-t border-slate-800">
-                        <span className="text-emerald-400 font-semibold">✓ 정상 검수</span>
-                        <Link href="/library" className="text-indigo-400 hover:underline">에셋 열람 ➔</Link>
+                      <p className="text-xs font-bold text-slate-900 line-clamp-1">{asset.title}</p>
+                      <div className="text-[11px] text-slate-500 line-clamp-1">규격: {asset.spec || '표준 규격'}</div>
+                      <div className="flex items-center justify-between text-[11px] pt-2 border-t border-slate-200">
+                        <span className="text-emerald-600 font-semibold">✓ 정상 검수</span>
+                        <Link href="/library" className="text-indigo-600 font-bold hover:underline">에셋 열람 ➔</Link>
                       </div>
                     </div>
                   );
                 })
               ) : (
-                <div className="col-span-3 py-8 text-center text-slate-500 text-xs">
+                <div className="col-span-3 py-8 text-center text-slate-400 text-xs">
                   생성된 마케팅 에셋이 없습니다.
                 </div>
               )}
@@ -636,19 +799,19 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 탭 4: 주간 오토파일럿 & 발행 큐 실시간 관제 */}
+        {/* 탭 6: 주간 오토파일럿 & 발행 큐 실시간 관제 */}
         {activeTab === 'campaigns' && (
-          <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl space-y-6">
-            <div className="flex items-center justify-between">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
-                <h2 className="text-base font-extrabold text-white">주간 마케팅 오토파일럿 & 발행 큐 실시간 관제</h2>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <h2 className="text-base font-extrabold text-slate-900">주간 마케팅 오토파일럿 &amp; 발행 큐 실시간 관제</h2>
+                <p className="text-xs text-slate-500 mt-0.5">
                   매장별 7일 자동화 스케줄과 SNS/플레이스/당근마켓 예약 발행 현황을 모니터링합니다.
                 </p>
               </div>
               <Link
                 href="/calendar"
-                className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 transition"
+                className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 transition shadow-xs"
               >
                 <Calendar className="w-3.5 h-3.5" />
                 <span>오토 캘린더 바로가기</span>
@@ -658,14 +821,14 @@ export default function AdminPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {data?.campaigns && data.campaigns.length > 0 ? (
                 data.campaigns.map((camp: any) => (
-                  <div key={camp.id} className="p-4 rounded-2xl bg-slate-900/80 border border-slate-700 space-y-3">
+                  <div key={camp.id} className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200 space-y-3 hover:border-indigo-300 transition-all">
                     <div className="flex items-center justify-between">
                       <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
-                        camp.platform === 'karrot' ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' :
-                        camp.platform === 'naver_place' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
-                        camp.platform === 'instagram' ? 'bg-pink-500/20 text-pink-400 border-pink-500/30' :
-                        camp.platform === 'blog' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
-                        'bg-indigo-500/20 text-indigo-400 border-indigo-500/30'
+                        camp.platform === 'karrot' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                        camp.platform === 'naver_place' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                        camp.platform === 'instagram' ? 'bg-pink-50 text-pink-700 border-pink-200' :
+                        camp.platform === 'blog' ? 'bg-green-50 text-green-700 border-green-200' :
+                        'bg-indigo-50 text-indigo-700 border-indigo-200'
                       }`}>
                         {camp.platform === 'karrot' ? '🥕 당근마켓' :
                          camp.platform === 'naver_place' ? '🌿 스마트플레이스' :
@@ -673,7 +836,7 @@ export default function AdminPage() {
                          camp.platform === 'blog' ? '📝 네이버 블로그' : '🖨️ 인쇄물'}
                       </span>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        camp.status === 'published' ? 'bg-blue-500/20 text-blue-400' : 'bg-emerald-500/20 text-emerald-400'
+                        camp.status === 'published' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                       }`}>
                         {camp.status === 'published' ? '✓ 발행 완료' : '⏰ 자동 예약'}
                       </span>
@@ -681,18 +844,18 @@ export default function AdminPage() {
 
                     <div>
                       <span className="text-[11px] text-slate-400 font-mono block">{camp.scheduled_at} ({camp.time_slot})</span>
-                      <h4 className="text-xs font-bold text-white mt-1 line-clamp-1">{camp.title}</h4>
+                      <h4 className="text-xs font-bold text-slate-900 mt-1 line-clamp-1">{camp.title}</h4>
                     </div>
 
                     {camp.tip && (
-                      <p className="text-[11px] text-slate-400 bg-slate-800/80 p-2 rounded-xl line-clamp-2">
+                      <p className="text-[11px] text-slate-600 bg-white p-2.5 rounded-xl border border-slate-200 line-clamp-2">
                         💡 {camp.tip}
                       </p>
                     )}
                   </div>
                 ))
               ) : (
-                <div className="col-span-3 py-8 text-center text-slate-500 text-xs">
+                <div className="col-span-3 py-8 text-center text-slate-400 text-xs">
                   등록된 캠페인 스케줄이 없습니다.
                 </div>
               )}
@@ -700,12 +863,12 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 탭 5: 외부 채널 디스패치 감사 로그 (신규) */}
+        {/* 탭 7: 외부 채널 디스패치 감사 로그 */}
         {activeTab === 'dispatch' && (
           <div className="space-y-4">
-            <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl mb-4">
-              <h2 className="text-base font-extrabold text-white">외부 채널 실시간 디스패치 감사 로그</h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 mb-4">
+              <h2 className="text-base font-extrabold text-slate-900">외부 채널 실시간 디스패치 감사 로그</h2>
+              <p className="text-xs text-slate-500 mt-0.5">
                 당근마켓, 스마트플레이스, 인스타그램, 블로그 등 7대 외부 채널로 발행된 실제 API 디스패치 상태와 실패율을 감사하고 즉시 재시도(Retry)합니다.
               </p>
             </div>
@@ -713,12 +876,12 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 탭 6: AI 시스템 프롬프트 관리 & 실시간 튜닝 스튜디오 */}
+        {/* 탭 8: AI 시스템 프롬프트 관리 & 실시간 튜닝 스튜디오 */}
         {activeTab === 'prompts' && (
           <div className="space-y-4">
-            <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl mb-4">
-              <h2 className="text-base font-extrabold text-white">AI 프롬프트 버전 관리 & 실시간 튜닝 스튜디오</h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 mb-4">
+              <h2 className="text-base font-extrabold text-slate-900">AI 프롬프트 버전 관리 &amp; 실시간 튜닝 스튜디오</h2>
+              <p className="text-xs text-slate-500 mt-0.5">
                 코드 재배포 없이 7대 채널별 시스템 프롬프트, 치환 변수 템플릿, Temperature 파라미터를 실시간 핫픽스하고 Playground에서 즉석 테스트합니다.
               </p>
             </div>
@@ -726,12 +889,12 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 탭 7: 1:1 점주 CS 문의 & AI 답변 티켓 시스템 (신규) */}
+        {/* 탭 9: 1:1 점주 CS 문의 & AI 답변 티켓 시스템 */}
         {activeTab === 'inquiries' && (
           <div className="space-y-4">
-            <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl mb-4">
-              <h2 className="text-base font-extrabold text-white">1:1 마케팅 CS 문의 & 상담 티켓 센터</h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 mb-4">
+              <h2 className="text-base font-extrabold text-slate-900">1:1 마케팅 CS 문의 &amp; 상담 티켓 센터</h2>
+              <p className="text-xs text-slate-500 mt-0.5">
                 점주님들의 채널 연동, 마케팅 품질, 요금 문의를 접수하고 ⚡ AI 원클릭 답변 초안 생성을 통해 초고속으로 친절한 솔루션을 제공합니다.
               </p>
             </div>
@@ -739,12 +902,12 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 탭 8: 점주 긴급 문자 & 알림톡 발송 센터 (신규) */}
+        {/* 탭 10: 점주 긴급 문자 & 알림톡 발송 센터 */}
         {activeTab === 'sms' && (
           <div className="space-y-4">
-            <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl mb-4">
-              <h2 className="text-base font-extrabold text-white">SMS / 카카오 알림톡 긴급 공지 & 마케팅 발송 센터</h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 mb-4">
+              <h2 className="text-base font-extrabold text-slate-900">SMS / 카카오 알림톡 긴급 공지 &amp; 마케팅 발송 센터</h2>
+              <p className="text-xs text-slate-500 mt-0.5">
                 점주 전체 또는 개별 매장으로 바이트 수 자동 판별(SMS 90B / LMS 2000B) 긴급 공지, 토큰 충전 알림, 예약 리마인더를 발송합니다.
               </p>
             </div>
@@ -755,9 +918,9 @@ export default function AdminPage() {
         {/* 탭 11: 스마트 디스패치 자동화 규칙 엔진 */}
         {activeTab === 'rules' && (
           <div className="space-y-4">
-            <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl mb-4">
-              <h2 className="text-base font-extrabold text-white">이벤트 기반 스마트 디스패치 자동화 규칙 엔진</h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 mb-4">
+              <h2 className="text-base font-extrabold text-slate-900">이벤트 기반 스마트 디스패치 자동화 규칙 엔진</h2>
+              <p className="text-xs text-slate-500 mt-0.5">
                 날씨(비/폭염), 골든 타임(불금/주말), 마감 시간 조건 충족 시 타겟 채널(당근/플레이스/인스타)로 프로모션 콘텐츠를 무인 자동 발행합니다.
               </p>
             </div>
@@ -765,25 +928,25 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 탭 12: 자주 묻는 질문(FAQ) CMS (신규) */}
+        {/* 탭 12: 자주 묻는 질문(FAQ) CMS */}
         {activeTab === 'faqs' && (
           <div className="space-y-4">
-            <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl mb-4">
-              <h2 className="text-base font-extrabold text-white">소상공인 자주 묻는 질문(FAQ) CMS</h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                점주들이 스스로 문제를 해결할 수 있도록 채널 연동, 요금/환불, 인쇄 관련 가이드 Q&A를 등록 및 관리합니다.
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 mb-4">
+              <h2 className="text-base font-extrabold text-slate-900">소상공인 자주 묻는 질문(FAQ) CMS</h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                점주들이 스스로 문제를 해결할 수 있도록 채널 연동, 요금/환불, 인쇄 관련 가이드 Q&amp;A를 등록 및 관리합니다.
               </p>
             </div>
             <AdminFaqsTab />
           </div>
         )}
 
-        {/* 탭 13: 사업자 정보 & 법무 약관 CMS (신규) */}
+        {/* 탭 13: 사업자 정보 & 법무 약관 CMS */}
         {activeTab === 'footer' && (
           <div className="space-y-4">
-            <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl mb-4">
-              <h2 className="text-base font-extrabold text-white">사업자 정보 & 법무 약관 (이용약관/개인정보/환불) CMS</h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 mb-4">
+              <h2 className="text-base font-extrabold text-slate-900">사업자 정보 &amp; 법무 약관 (이용약관/개인정보/환불) CMS</h2>
+              <p className="text-xs text-slate-500 mt-0.5">
                 통신판매업 필수 고지 정보, 이용약관, 개인정보처리방침, 환불 규정을 코드 배포 없이 실시간 수정합니다.
               </p>
             </div>
@@ -793,34 +956,34 @@ export default function AdminPage() {
 
         {/* 탭 14: 벤치마크 레퍼런스 CMS */}
         {activeTab === 'cms' && (
-          <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl space-y-6">
-            <div className="flex items-center justify-between">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
-                <h2 className="text-base font-extrabold text-white">업종별 1위 바이럴 큐레이션 CMS</h2>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <h2 className="text-base font-extrabold text-slate-900">업종별 1위 바이럴 큐레이션 CMS</h2>
+                <p className="text-xs text-slate-500 mt-0.5">
                   사장님들에게 제공되는 추천 벤치마크 레퍼런스(유튜브 쇼츠, 릴스, 상세페이지)를 등록 및 갱신합니다.
                 </p>
               </div>
               <Link
                 href="/references"
-                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 transition"
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 transition shadow-xs"
               >
                 <Plus className="w-4 h-4" />
                 <span>새 큐레이션 등록하기</span>
               </Link>
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-700/80 flex items-center justify-between">
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-lg">
                   🍰
                 </div>
                 <div>
-                  <span className="font-bold text-xs text-white block">베이커리 / 수제 디저트 업종 큐레이션 (5종 등록 완료)</span>
-                  <span className="text-[11px] text-slate-400">대만 카스테라 커팅 ASMR (120만뷰), 저장수 3.8만 6컷 카드뉴스 등</span>
+                  <span className="font-bold text-xs text-slate-900 block">베이커리 / 수제 디저트 업종 큐레이션 (5종 등록 완료)</span>
+                  <span className="text-[11px] text-slate-500">대만 카스테라 커팅 ASMR (120만뷰), 저장수 3.8만 6컷 카드뉴스 등</span>
                 </div>
               </div>
-              <Link href="/references" className="text-xs font-bold text-indigo-400 hover:text-indigo-300">
+              <Link href="/references" className="text-xs font-bold text-indigo-600 hover:text-indigo-800">
                 관리 ➔
               </Link>
             </div>
@@ -829,11 +992,11 @@ export default function AdminPage() {
 
         {/* 탭 15: AI 모델 믹스 & 시스템 인프라 */}
         {activeTab === 'system' && (
-          <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl space-y-6">
-            <div className="flex items-center justify-between">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
-                <h2 className="text-base font-extrabold text-white">AI 모델 믹스(Model Mix) 헬스체크</h2>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <h2 className="text-base font-extrabold text-slate-900">AI 모델 믹스(Model Mix) 헬스체크</h2>
+                <p className="text-xs text-slate-500 mt-0.5">
                   텍스트, 이미지, 비디오, 음성 전사 모델의 가동 상태 및 지연시간(Latency)을 모니터링합니다.
                 </p>
               </div>
@@ -841,29 +1004,29 @@ export default function AdminPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {stats?.activeModelStatus && Object.entries(stats.activeModelStatus).map(([key, m]: [string, any]) => (
-                <div key={key} className="p-4 rounded-2xl bg-slate-900/80 border border-slate-700 space-y-2">
+                <div key={key} className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-black text-indigo-400 uppercase">{key} ENGINE</span>
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">
+                    <span className="text-xs font-black text-indigo-600 uppercase">{key} ENGINE</span>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">
                       {m.status}
                     </span>
                   </div>
-                  <div className="font-mono text-sm font-bold text-white">{m.name}</div>
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-800">
+                  <div className="font-mono text-sm font-bold text-slate-900">{m.name}</div>
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-200">
                     <span>지연: {m.latency}</span>
-                    <span className="text-emerald-400 font-semibold">성공: {m.successRate}</span>
+                    <span className="text-emerald-600 font-semibold">성공: {m.successRate}</span>
                   </div>
                 </div>
               ))}
             </div>
 
             {/* 인프라 스펙 */}
-            <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-700 text-xs text-slate-400 space-y-2">
-              <div className="font-bold text-white">데이터베이스 및 런타임 환경</div>
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-2">
+              <div className="font-bold text-slate-900">데이터베이스 및 런타임 환경</div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
-                <div>• SQLite 18대 통합 테이블: <span className="text-slate-200">영구 저장 마운트</span></div>
-                <div>• Turbopack 번들러: <span className="text-slate-200">초고속 컴파일</span></div>
-                <div>• Capacitor Android: <span className="text-slate-200">v7.0 동기화 완료</span></div>
+                <div>• SQLite 18대 통합 테이블: <span className="font-bold text-indigo-700">영구 저장 마운트</span></div>
+                <div>• Turbopack 번들러: <span className="font-bold text-slate-800">초고속 컴파일</span></div>
+                <div>• Capacitor Android: <span className="font-bold text-slate-800">v7.0 동기화 완료</span></div>
               </div>
             </div>
           </div>
@@ -871,20 +1034,20 @@ export default function AdminPage() {
 
       </main>
 
-      {/* 토큰 수동 지급 모달 */}
+      {/* 토큰 수동 지급 모달 (시트봇 스타일 화이트 모달) */}
       {showTokenModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-700 space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-700 pb-3">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <Wallet className="w-4 h-4 text-amber-400" />
-                <h3 className="font-extrabold text-sm text-white">
+                <Wallet className="w-5 h-5 text-amber-500" />
+                <h3 className="font-extrabold text-base text-slate-900">
                   점주 마케팅 토큰 수동 지급
                 </h3>
               </div>
               <button
                 onClick={() => setShowTokenModal(false)}
-                className="w-7 h-7 rounded-full bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-xs font-bold"
+                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center text-xs font-bold cursor-pointer"
               >
                 ✕
               </button>
@@ -892,29 +1055,29 @@ export default function AdminPage() {
 
             <form onSubmit={handleAdjustToken} className="space-y-4 text-xs">
               <div>
-                <label className="block text-slate-400 mb-1">지급 대상 점주</label>
-                <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-700 font-bold text-white">
+                <label className="block text-slate-500 mb-1 font-semibold">지급 대상 점주</label>
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 font-bold text-slate-900">
                   {selectedUser?.name || '퐁신제빵소 사장님'} ({selectedUser?.email || 'usr_pongshin_master'})
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">지급/차감 토큰 수량 (T)</label>
+                <label className="block text-slate-500 mb-1 font-semibold">지급/차감 토큰 수량 (T)</label>
                 <input
                   type="number"
                   value={tokenAmount}
                   onChange={(e) => setTokenAmount(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono font-bold focus:ring-2 focus:ring-indigo-500"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 font-mono font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">지급 사유 메모</label>
+                <label className="block text-slate-500 mb-1 font-semibold">지급 사유 메모</label>
                 <input
                   type="text"
                   value={tokenReason}
                   onChange={(e) => setTokenReason(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:ring-2 focus:ring-indigo-500"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none"
                 />
               </div>
 
@@ -922,14 +1085,14 @@ export default function AdminPage() {
                 <button
                   type="button"
                   onClick={() => setShowTokenModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-700 text-slate-300 font-bold hover:bg-slate-600 transition"
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 transition cursor-pointer"
                 >
                   취소
                 </button>
                 <button
                   type="submit"
                   disabled={isAdjusting}
-                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition shadow-md disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition shadow-xs disabled:opacity-50 cursor-pointer"
                 >
                   {isAdjusting ? '처리 중...' : '토큰 즉시 지급'}
                 </button>

@@ -13,6 +13,9 @@ export interface FooterConfig {
   hostingProvider: string;
   privacyManager: string;
   copyrightText: string;
+  depositBankName: string;
+  depositAccountNumber: string;
+  depositAccountHolder: string;
   termsOfService: string;
   privacyPolicy: string;
   refundPolicy: string;
@@ -29,9 +32,12 @@ const DEFAULT_FOOTER: FooterConfig = {
   hostingProvider: 'Google Cloud Platform (GCP)',
   privacyManager: '김보안 (privacy@auto-marketing.kr)',
   copyrightText: 'Copyright © 2026 Auto-Marketing Corp. All Rights Reserved.',
-  termsOfService: `제1조 (목적)\n본 약관은 (주)오토마케팅이 제공하는 소상공인 마케팅 자동화 서비스 이용에 관한 권리와 의무를 규정합니다.`,
-  privacyPolicy: `1. 개인정보의 수집 및 이용 목적\n회사는 소상공인 회원가입 및 본인 확인, 마케팅 토큰 충전 및 결제 정산, 외부 SNS 채널 연동 API 인증 관리를 위해 개인정보를 처리합니다.`,
-  refundPolicy: `제1조 (청약철회 및 환불 규정)\n1. 이용자가 구매한 마케팅 토큰은 결제일로부터 7일 이내 미사용 시 전액 환불됩니다.`,
+  depositBankName: '카카오뱅크',
+  depositAccountNumber: '3333-12-1695965',
+  depositAccountHolder: '차호석',
+  termsOfService: '',
+  privacyPolicy: '',
+  refundPolicy: '',
 };
 
 export async function GET() {
@@ -52,6 +58,9 @@ export async function GET() {
           hostingProvider: row.hosting_provider || DEFAULT_FOOTER.hostingProvider,
           privacyManager: row.privacy_manager || DEFAULT_FOOTER.privacyManager,
           copyrightText: row.copyright_text || DEFAULT_FOOTER.copyrightText,
+          depositBankName: row.deposit_bank_name || DEFAULT_FOOTER.depositBankName,
+          depositAccountNumber: row.deposit_account_number || DEFAULT_FOOTER.depositAccountNumber,
+          depositAccountHolder: row.deposit_account_holder || DEFAULT_FOOTER.depositAccountHolder,
           termsOfService: row.terms_of_service || DEFAULT_FOOTER.termsOfService,
           privacyPolicy: row.privacy_policy || DEFAULT_FOOTER.privacyPolicy,
           refundPolicy: row.refund_policy || DEFAULT_FOOTER.refundPolicy,
@@ -90,6 +99,9 @@ export async function PUT(req: Request) {
     if (body.hostingProvider !== undefined) sets.push(`hosting_provider = '${escape(body.hostingProvider)}'`);
     if (body.privacyManager !== undefined) sets.push(`privacy_manager = '${escape(body.privacyManager)}'`);
     if (body.copyrightText !== undefined) sets.push(`copyright_text = '${escape(body.copyrightText)}'`);
+    if (body.depositBankName !== undefined) sets.push(`deposit_bank_name = '${escape(body.depositBankName)}'`);
+    if (body.depositAccountNumber !== undefined) sets.push(`deposit_account_number = '${escape(body.depositAccountNumber)}'`);
+    if (body.depositAccountHolder !== undefined) sets.push(`deposit_account_holder = '${escape(body.depositAccountHolder)}'`);
     if (body.termsOfService !== undefined) sets.push(`terms_of_service = '${escape(body.termsOfService)}'`);
     if (body.privacyPolicy !== undefined) sets.push(`privacy_policy = '${escape(body.privacyPolicy)}'`);
     if (body.refundPolicy !== undefined) sets.push(`refund_policy = '${escape(body.refundPolicy)}'`);
@@ -101,7 +113,7 @@ export async function PUT(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: '사업자 정보 및 법무 약관이 SQLite DB에 영구 저장되었으며 프론트엔드에 실시간 반영되었습니다.',
+      message: '사업자 정보, 무통장 수령 계좌 및 법무 약관이 SQLite DB에 영구 저장되었습니다.',
     });
   } catch (error: any) {
     return NextResponse.json(

@@ -197,6 +197,57 @@ export default function AdminFooterTab() {
                 className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
               />
             </div>
+
+            {/* 🏦 무통장 입금 수령 계좌 설정 (Agent M 연동) */}
+            <div className="sm:col-span-2 pt-4 border-t border-slate-200">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <h4 className="font-extrabold text-sm text-slate-900">
+                  🏦 Agent M 무통장 입금 수령 계좌 설정 (점주 결제용)
+                </h4>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
+                  결제 모달 실시간 연동
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 mb-3">
+                점주가 토큰 충전 시 입금할 은행명, 계좌번호, 예금주를 지정합니다. 수정 후 [실시간 무배포 저장]을 누르면 결제 모달에 즉시 반영됩니다.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">입금 은행명:</label>
+                  <input
+                    type="text"
+                    value={config.depositBankName || ''}
+                    onChange={(e) => setConfig({ ...config, depositBankName: e.target.value })}
+                    placeholder="예: 카카오뱅크, 국민은행"
+                    className="w-full p-2.5 bg-indigo-50/40 border border-indigo-200 rounded-xl font-medium text-slate-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">수령 계좌번호:</label>
+                  <input
+                    type="text"
+                    value={config.depositAccountNumber || ''}
+                    onChange={(e) => setConfig({ ...config, depositAccountNumber: e.target.value })}
+                    placeholder="예: 3333-12-1695965"
+                    className="w-full p-2.5 bg-indigo-50/40 border border-indigo-200 rounded-xl font-mono font-bold text-slate-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">예금주명:</label>
+                  <input
+                    type="text"
+                    value={config.depositAccountHolder || ''}
+                    onChange={(e) => setConfig({ ...config, depositAccountHolder: e.target.value })}
+                    placeholder="예: 차호석"
+                    className="w-full p-2.5 bg-indigo-50/40 border border-indigo-200 rounded-xl font-medium text-slate-900"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

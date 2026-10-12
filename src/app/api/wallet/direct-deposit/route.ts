@@ -91,6 +91,22 @@ export async function POST(request: Request) {
     const now = new Date().toISOString();
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1시간 유효
 
+    // 관리자 페이지(auto_footer_configs)에서 설정한 무통장 수령 계좌 우선 조회
+    let bankInfo = DEFAULT_BANK_INFO;
+    try {
+      const footerRes = await queryTable('auto_footer_configs', { limit: 1 }).catch(() => ({ rows: [] }));
+      const fRow = footerRes.rows?.[0];
+      if (fRow && fRow.deposit_account_number) {
+        bankInfo = {
+          bankName: fRow.deposit_bank_name || DEFAULT_BANK_INFO.bankName,
+          accountNumber: fRow.deposit_account_number || DEFAULT_BANK_INFO.accountNumber,
+          accountHolder: fRow.deposit_account_holder || DEFAULT_BANK_INFO.accountHolder,
+        };
+      }
+    } catch (e) {
+      console.warn('Load deposit bank info error:', e);
+    }
+
     const insertSql = `
       INSERT INTO auto_deposit_requests (
         id, deposit_code, depositor_name, user_email, user_name,
@@ -100,7 +116,7 @@ export async function POST(request: Request) {
       ) VALUES (
         '${requestId}', '${depositCode}', '${cleanDepositorName}', '${email}', '${userName || cleanDepositorName}',
         '${pkg.id}', '${pkg.name}', ${pkg.priceKrw}, ${discountKrw}, ${finalAmountKrw},
-        ${pkg.tokens}, '${DEFAULT_BANK_INFO.bankName}', '${DEFAULT_BANK_INFO.accountNumber}', '${DEFAULT_BANK_INFO.accountHolder}', '${phoneNumber || ''}',
+        ${pkg.tokens}, '${bankInfo.bankName}', '${bankInfo.accountNumber}', '${bankInfo.accountHolder}', '${phoneNumber || ''}',
         0, 'PENDING', 0, '${expiresAt}', '${now}', '${now}'
       );
     `;
@@ -122,9 +138,9 @@ export async function POST(request: Request) {
         originalAmountKrw: pkg.priceKrw,
         discountKrw,
         amountKrw: finalAmountKrw,
-        bankName: DEFAULT_BANK_INFO.bankName,
-        accountNumber: DEFAULT_BANK_INFO.accountNumber,
-        accountHolder: DEFAULT_BANK_INFO.accountHolder,
+        bankName: bankInfo.bankName,
+        accountNumber: bankInfo.accountNumber,
+        accountHolder: bankInfo.accountHolder,
         expiresAt,
       },
     });

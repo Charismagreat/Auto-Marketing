@@ -1034,6 +1034,19 @@ export async function setupDatabase(force = false) {
       { name: 'created_at', type: 'TEXT' },
     ], { tableName: 'ai_token_usage_logs' });
 
+    // 8-2. auto_token_logs (토큰 지급/차감 및 변동 감사 대장)
+    await safeCreateTable('Auto-Marketing 토큰 지급차감 감사 대장', [
+      { name: 'id', type: 'TEXT' },
+      { name: 'user_id', type: 'TEXT' },
+      { name: 'user_name', type: 'TEXT' },
+      { name: 'type', type: 'TEXT' }, // CREDIT, DEDUCT, DEPOSIT, USAGE
+      { name: 'amount', type: 'INTEGER' },
+      { name: 'balance_after', type: 'INTEGER' },
+      { name: 'reason', type: 'TEXT' },
+      { name: 'admin_name', type: 'TEXT' },
+      { name: 'created_at', type: 'TEXT' },
+    ], { tableName: 'auto_token_logs' });
+
     // 9. auto_media (스토리지 미디어 라이브러리)
     await safeCreateTable('Auto-Marketing 미디어 스토리지 대장', [
       { name: 'id', type: 'TEXT' },

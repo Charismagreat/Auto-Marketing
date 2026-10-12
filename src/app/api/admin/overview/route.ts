@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { executeSQL, queryTable, updateRows, insertRows } from '@/lib/egdesk-helpers';
+import { setupDatabase } from '@/lib/setup-db';
 
 export async function GET() {
   try {
+    await setupDatabase().catch(() => {});
     // 1. 회원 목록 및 비즈니스 조회
     let users: any[] = [];
     let businesses: any[] = [];
@@ -52,6 +54,15 @@ export async function GET() {
       pricingPlans = Array.isArray(plRes) ? plRes : plRes?.rows || [];
     } catch (e) {
       console.warn('Query pricing plans error:', e);
+    }
+
+    let tokenLogs: any[] = [];
+    try {
+      const tlRes = await queryTable('auto_token_logs', { limit: 100 });
+      tokenLogs = Array.isArray(tlRes) ? tlRes : tlRes?.rows || [];
+      tokenLogs.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+    } catch (e) {
+      console.warn('Query token logs error:', e);
     }
 
     try {
@@ -141,6 +152,7 @@ export async function GET() {
       campaigns,
       mediaList,
       pricingPlans,
+      tokenLogs,
     });
   } catch (error: any) {
     console.error('Admin overview error:', error);
@@ -150,6 +162,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    await setupDatabase().catch(() => {});
     const body = await req.json();
     const { action, userId, amount, reason } = body;
 
@@ -189,7 +202,24 @@ export async function POST(req: Request) {
         filters: { id: user.id },
       });
 
-      // 3. 감사 로그 기록 (ai_token_usage_logs)
+      // 3. 토큰 지급/차감 전용 감사 대장(auto_token_logs)에 기록
+      try {
+        await insertRows('auto_token_logs', [{
+          id: `tlog_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+          user_id: user.id,
+          user_name: user.name || user.email,
+          type: delta >= 0 ? 'CREDIT' : 'DEDUCT',
+          amount: delta,
+          balance_after: newBalance,
+          reason: reason || (delta >= 0 ? '관리자 수동 지급' : '관리자 수동 차감'),
+          admin_name: '슈퍼 관리자',
+          created_at: now,
+        }]);
+      } catch (logErr) {
+        console.warn('auto_token_logs insert skipped:', logErr);
+      }
+
+      // 4. 레거시 AI 사용 로그(ai_token_usage_logs) 호환 기록
       try {
         await insertRows('ai_token_usage_logs', [{
           id: `log_admin_${Date.now()}`,
@@ -200,7 +230,7 @@ export async function POST(req: Request) {
           description: reason || (delta >= 0 ? '관리자 수동 지급' : '관리자 수동 차감'),
         }]);
       } catch (logErr) {
-        console.warn('Audit log write skipped:', logErr);
+        console.warn('ai_token_usage_logs insert skipped:', logErr);
       }
 
       const actionText = delta >= 0 ? '지급(+)' : '차감(-)';

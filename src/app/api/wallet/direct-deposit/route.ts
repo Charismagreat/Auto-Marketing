@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { TOKEN_PACKAGES, creditTokens } from '@/lib/token-wallet';
-import { setupDatabase, executeSQL } from '@/lib/setup-db';
+import { setupDatabase, executeSQL, insertRows } from '@/lib/setup-db';
 import { syncAndMatchBankDepositFromPhone } from '@/lib/phone-bank-sync';
 import { depositEvents } from '@/lib/deposit-events';
 
@@ -107,21 +107,31 @@ export async function POST(request: Request) {
       console.warn('Load deposit bank info error:', e);
     }
 
-    const insertSql = `
-      INSERT INTO auto_deposit_requests (
-        id, deposit_code, depositor_name, user_email, user_name,
-        package_id, package_name, original_amount_krw, discount_krw, amount_krw,
-        tokens_to_credit, bank_name, account_number, account_holder, phone_number,
-        receipt_sent, status, actual_amount_krw, expires_at, created_at, updated_at
-      ) VALUES (
-        '${requestId}', '${depositCode}', '${cleanDepositorName}', '${email}', '${userName || cleanDepositorName}',
-        '${pkg.id}', '${pkg.name}', ${pkg.priceKrw}, ${discountKrw}, ${finalAmountKrw},
-        ${pkg.tokens}, '${bankInfo.bankName}', '${bankInfo.accountNumber}', '${bankInfo.accountHolder}', '${phoneNumber || ''}',
-        0, 'PENDING', 0, '${expiresAt}', '${now}', '${now}'
-      );
-    `;
-
-    await executeSQL(insertSql);
+    await insertRows('auto_deposit_requests', [
+      {
+        id: requestId,
+        deposit_code: depositCode,
+        depositor_name: cleanDepositorName,
+        user_email: email,
+        user_name: userName || cleanDepositorName,
+        package_id: pkg.id,
+        package_name: pkg.name,
+        original_amount_krw: pkg.priceKrw,
+        discount_krw: discountKrw,
+        amount_krw: finalAmountKrw,
+        tokens_to_credit: pkg.tokens,
+        bank_name: bankInfo.bankName,
+        account_number: bankInfo.accountNumber,
+        account_holder: bankInfo.accountHolder,
+        phone_number: phoneNumber || '',
+        receipt_sent: 0,
+        status: 'PENDING',
+        actual_amount_krw: 0,
+        expires_at: expiresAt,
+        created_at: now,
+        updated_at: now,
+      }
+    ]);
 
     // 신규 생성 직후 백그라운드 폰 동기화 1회 즉시 호출
     syncAndMatchBankDepositFromPhone(requestId).catch(() => {});

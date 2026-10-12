@@ -2,11 +2,13 @@ import {
   createTable,
   queryTable,
   insertRows,
+  updateRows,
+  deleteRows,
   executeSQL,
   callUserDataTool,
 } from './egdesk-helpers';
 
-export { queryTable, insertRows, executeSQL };
+export { queryTable, insertRows, updateRows, deleteRows, executeSQL };
 
 let isDbInitialized = false;
 let dbInitPromise: Promise<void> | null = null;

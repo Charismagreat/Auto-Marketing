@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { executeSQL, queryTable, insertRows } from '@/lib/egdesk-helpers';
+import { executeSQL, queryTable, insertRows, deleteRows } from '@/lib/egdesk-helpers';
 
 export async function GET(req: Request) {
   try {
@@ -122,7 +122,7 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ success: false, error: '삭제할 에셋 ID가 필요합니다.' }, { status: 400 });
     }
 
-    await executeSQL(`DELETE FROM auto_assets WHERE id = '${id}'`);
+    await deleteRows('auto_assets', { filters: { id } });
 
     return NextResponse.json({
       success: true,

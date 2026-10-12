@@ -1,4 +1,4 @@
-import { executeSQL, queryTable } from './egdesk-helpers';
+import { updateRows, insertRows, queryTable } from './egdesk-helpers';
 
 export interface PaymentPackage {
   id: string;
@@ -89,17 +89,25 @@ export async function creditTokens(userEmail: string, tokensToAdd: number, reaso
     }).catch(() => ({ rows: [] }));
 
     if (!check.rows || check.rows.length === 0) {
-      await executeSQL(`
-        INSERT INTO auto_users (id, email, name, token_balance, plan, created_at, updated_at)
-        VALUES ('usr_${Date.now()}', '${email}', '소상공인 회원', ${50000 + tokensToAdd}, 'PRO', '${now}', '${now}')
-      `);
+      await insertRows('auto_users', [
+        {
+          id: `usr_${Date.now()}`,
+          email,
+          name: '소상공인 회원',
+          token_balance: 50000 + tokensToAdd,
+          plan: 'PRO',
+          created_at: now,
+          updated_at: now,
+        }
+      ]);
     } else {
-      await executeSQL(`
-        UPDATE auto_users 
-        SET token_balance = COALESCE(token_balance, 0) + ${tokensToAdd},
-            updated_at = '${now}'
-        WHERE email = '${email}'
-      `);
+      const currentBalance = Number(check.rows[0].token_balance || 0);
+      await updateRows('auto_users', {
+        token_balance: currentBalance + tokensToAdd,
+        updated_at: now,
+      }, {
+        filters: { email },
+      });
     }
 
     const updated = await getUserWallet(email);
@@ -123,12 +131,13 @@ export async function deductTokens(userEmail: string, tokensToDeduct: number, re
     return { success: false, error: '토큰 잔액이 부족합니다.', currentBalance: current.tokenBalance };
   }
 
-  await executeSQL(`
-    UPDATE auto_users 
-    SET token_balance = MAX(0, COALESCE(token_balance, 0) - ${tokensToDeduct}),
-        updated_at = '${now}'
-    WHERE email = '${email}'
-  `);
+  const newBalance = Math.max(0, current.tokenBalance - tokensToDeduct);
+  await updateRows('auto_users', {
+    token_balance: newBalance,
+    updated_at: now,
+  }, {
+    filters: { email },
+  });
 
   const updated = await getUserWallet(email);
   return { success: true, balance: updated.tokenBalance };

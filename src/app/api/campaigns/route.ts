@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { setupDatabase, queryTable, insertRows } from '@/lib/setup-db';
+import { setupDatabase, queryTable, insertRows, updateRows } from '@/lib/setup-db';
 import { executeSQL } from '@/lib/egdesk-helpers';
 
 export async function GET(req: NextRequest) {
@@ -63,7 +63,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'id와 status가 필요합니다.' }, { status: 400 });
     }
 
-    await executeSQL(`UPDATE auto_campaigns SET status = '${status}' WHERE id = '${id}'`);
+    await updateRows('auto_campaigns', { status }, { filters: { id } });
 
     return NextResponse.json({
       success: true,
@@ -73,3 +73,5 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
+
+export const PUT = PATCH;

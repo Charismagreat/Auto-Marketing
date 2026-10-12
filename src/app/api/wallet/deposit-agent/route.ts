@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { setupDatabase, executeSQL } from '@/lib/setup-db';
+import { setupDatabase, executeSQL, updateRows, insertRows } from '@/lib/setup-db';
 import { callPhoneTool } from '@/lib/egdesk-helpers';
 import { syncAndMatchBankDepositFromPhone } from '@/lib/phone-bank-sync';
 import { parseBankDepositSms } from '@/lib/bank-sms-parser';
@@ -100,23 +100,36 @@ export async function POST(request: Request) {
       );
 
       // 세션 완료 업데이트
-      const escapedSms = simulatedSms.replace(/'/g, "''");
-      await executeSQL(`
-        UPDATE auto_deposit_requests 
-        SET status = 'COMPLETED',
-            actual_amount_krw = ${parsed.amountKrw},
-            raw_sms = '${escapedSms}',
-            matched_at = '${now}',
-            updated_at = '${now}',
-            updated_by = 'simulated_sms'
-        WHERE id = '${req.id}';
-      `);
+      await updateRows('auto_deposit_requests', {
+        status: 'COMPLETED',
+        actual_amount_krw: parsed.amountKrw,
+        raw_sms: simulatedSms,
+        matched_at: now,
+        updated_at: now,
+        updated_by: 'simulated_sms',
+      }, {
+        filters: { id: req.id },
+      });
 
       // 세금계산서 대장 기록
-      await executeSQL(`
-        INSERT INTO auto_tax_invoices (id, invoice_no, recipient_name, store_name, biz_number, supply_amount, vat_amount, total_amount, item_name, status, issue_date, created_at)
-        VALUES ('inv_${Date.now()}', 'INV-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}', '${req.depositor_name || req.user_name}', '${req.user_name}', '123-86-09876', ${Math.round(parsed.amountKrw / 1.1)}, ${parsed.amountKrw - Math.round(parsed.amountKrw / 1.1)}, ${parsed.amountKrw}, '${req.package_name}', 'ISSUED', '${now.slice(0, 10)}', '${now}')
-      `).catch(() => {});
+      await insertRows('auto_tax_invoices', [
+        {
+          id: `inv_${Date.now()}`,
+          invoice_number: `INV-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+          nts_approval_number: `20261012-41000284-${Math.floor(10000000 + Math.random() * 90000000)}`,
+          store_name: req.user_name || '소상공인 매장',
+          biz_number: '123-86-09876',
+          ceo_name: req.depositor_name || req.user_name || '대표자',
+          email: req.user_email,
+          item_description: req.package_name,
+          supply_amount: Math.round(parsed.amountKrw / 1.1),
+          vat_amount: parsed.amountKrw - Math.round(parsed.amountKrw / 1.1),
+          total_amount: parsed.amountKrw,
+          status: 'APPROVED',
+          issue_date: now.slice(0, 10),
+          created_at: now,
+        }
+      ]).catch(() => {});
 
       depositEvents.notify({
         type: 'DEPOSIT_COMPLETED',

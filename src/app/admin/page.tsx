@@ -28,13 +28,21 @@ import {
   Layers,
   Calendar,
   Clock,
+  Radio,
+  Sliders,
 } from 'lucide-react';
+import AdminDispatchLogsTab from './components/AdminDispatchLogsTab';
+import AdminPromptsTab from './components/AdminPromptsTab';
+import AdminProposalModal from './components/AdminProposalModal';
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<'users' | 'tokens' | 'assets' | 'campaigns' | 'cms' | 'system'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'tokens' | 'assets' | 'campaigns' | 'dispatch' | 'prompts' | 'cms' | 'system'>('users');
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
+  // 맞춤 마케팅 견적서 모달 상태
+  const [showProposalModal, setShowProposalModal] = useState(false);
+
   // 토큰 수동 지급 모달 상태
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -118,6 +126,13 @@ export default function AdminPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowProposalModal(true)}
+              className="flex items-center gap-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 px-3.5 py-1.5 rounded-xl shadow-xs transition"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>맞춤 마케팅 견적서 발행</span>
+            </button>
             <button
               onClick={fetchAdminData}
               className="flex items-center gap-1 text-xs text-slate-400 hover:text-white bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700"
@@ -238,6 +253,30 @@ export default function AdminPage() {
           </button>
 
           <button
+            onClick={() => setActiveTab('dispatch')}
+            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
+              activeTab === 'dispatch'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            <Radio className="w-4 h-4" />
+            <span>5. 외부 채널 디스패치 로그</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('prompts')}
+            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
+              activeTab === 'prompts'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            <Sliders className="w-4 h-4" />
+            <span>6. AI 프롬프트 튜닝</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('cms')}
             className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
               activeTab === 'cms'
@@ -246,7 +285,7 @@ export default function AdminPage() {
             }`}
           >
             <Compass className="w-4 h-4" />
-            <span>5. 바이럴 레퍼런스 CMS</span>
+            <span>7. 바이럴 레퍼런스 CMS</span>
           </button>
 
           <button
@@ -258,7 +297,7 @@ export default function AdminPage() {
             }`}
           >
             <Cpu className="w-4 h-4" />
-            <span>6. AI 모델 믹스 & 인프라</span>
+            <span>8. AI 모델 믹스 & 인프라</span>
           </button>
         </div>
 
@@ -540,7 +579,33 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 탭 5: 벤치마크 레퍼런스 CMS */}
+        {/* 탭 5: 외부 채널 디스패치 감사 로그 (신규) */}
+        {activeTab === 'dispatch' && (
+          <div className="space-y-4">
+            <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl mb-4">
+              <h2 className="text-base font-extrabold text-white">외부 채널 실시간 디스패치 감사 로그</h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                당근마켓, 스마트플레이스, 인스타그램, 블로그 등 7대 외부 채널로 발행된 실제 API 디스패치 상태와 실패율을 감사하고 즉시 재시도(Retry)합니다.
+              </p>
+            </div>
+            <AdminDispatchLogsTab />
+          </div>
+        )}
+
+        {/* 탭 6: AI 시스템 프롬프트 관리 & 실시간 튜닝 스튜디오 (신규) */}
+        {activeTab === 'prompts' && (
+          <div className="space-y-4">
+            <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl mb-4">
+              <h2 className="text-base font-extrabold text-white">AI 프롬프트 버전 관리 & 실시간 튜닝 스튜디오</h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                코드 재배포 없이 7대 채널별 시스템 프롬프트, 치환 변수 템플릿, Temperature 파라미터를 실시간 핫픽스하고 Playground에서 즉석 테스트합니다.
+              </p>
+            </div>
+            <AdminPromptsTab />
+          </div>
+        )}
+
+        {/* 탭 7: 벤치마크 레퍼런스 CMS */}
         {activeTab === 'cms' && (
           <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl space-y-6">
             <div className="flex items-center justify-between">
@@ -686,6 +751,19 @@ export default function AdminPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* 맞춤형 마케팅 견적서 & 제안서 자동 발행 모달 */}
+      {showProposalModal && (
+        <AdminProposalModal
+          initialStore={{
+            name: data?.users?.[0]?.name ? `${data.users[0].name} 매장` : '배곧 달콤베이커리',
+            ownerName: data?.users?.[0]?.name || '김점주 대표',
+            contact: '010-9876-5432',
+            address: '경기도 시흥시 배곧4로 30 골든플라자 1층',
+          }}
+          onClose={() => setShowProposalModal(false)}
+        />
       )}
     </div>
   );

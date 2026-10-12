@@ -57,6 +57,7 @@ import AdminTaxInvoicesTab from './components/AdminTaxInvoicesTab';
 import AdminFooterTab from './components/AdminFooterTab';
 import AdminFaqsTab from './components/AdminFaqsTab';
 import AdminDepositAgentSection from '@/components/admin/AdminDepositAgentSection';
+import Footer from '@/components/Footer';
 import { onUserDataChanged } from '@/lib/egdesk-helpers';
 
 // 15대 관제 탭을 비즈니스 도메인별 5대 핵심 카테고리로 체계화
@@ -1337,6 +1338,11 @@ export default function AdminPage() {
           onClose={() => setShowProposalModal(false)}
         />
       )}
+
+      {/* 관리자 푸터 (모바일 하단 내비바 세이프 패딩) */}
+      <div className="pb-16 sm:pb-0 mt-12">
+        <Footer />
+      </div>
     </div>
   );
 }

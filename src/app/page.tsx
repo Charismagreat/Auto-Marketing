@@ -24,6 +24,8 @@ import {
   HelpCircle,
   ArrowRight,
   Zap,
+  Menu,
+  X,
 } from 'lucide-react';
 import Footer from '@/components/Footer';
 import DirectDepositModal from '@/components/DirectDepositModal';
@@ -46,6 +48,7 @@ export default function DashboardPage() {
   const [referenceUrl, setReferenceUrl] = useState('');
   const [showAppModal, setShowAppModal] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // 🚀 1-Click 마케팅 풀 패키지 번들 생성 상태
   const [selectedBundleProdId, setSelectedBundleProdId] = useState<string>('');
@@ -102,28 +105,28 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* 1. 상단 글로벌 네비게이션 헤더 */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 lg:px-8 py-3.5">
+      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 lg:px-8 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-amber-400 flex items-center justify-center shadow-md shadow-indigo-100">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-amber-400 flex items-center justify-center shadow-md shadow-indigo-100 shrink-0">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-indigo-700 to-indigo-900 bg-clip-text text-transparent">
+              <span className="font-extrabold text-base sm:text-lg tracking-tight bg-gradient-to-r from-indigo-700 to-indigo-900 bg-clip-text text-transparent">
                 Auto-Marketing
               </span>
-              <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/60">
+              <span className="hidden sm:inline-block ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/60">
                 AI 마케팅 OS v1.0
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* 토큰 지갑 잔액 & 충전 버튼 */}
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200/70 text-amber-900 shadow-xs">
-                <Wallet className="w-4 h-4 text-amber-600" />
-                <span className="text-xs font-medium text-amber-700">체험 토큰</span>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-amber-50 border border-amber-200/70 text-amber-900 shadow-xs">
+                <Wallet className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                <span className="hidden xs:inline text-[11px] sm:text-xs font-medium text-amber-700">체험 토큰</span>
                 <span className="text-xs font-bold text-amber-950 font-mono">
                   {data?.user?.token_balance?.toLocaleString() || '50,000'} T
                 </span>
@@ -131,28 +134,28 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setShowDepositModal(true)}
-                className="px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-bold shadow-xs hover:shadow transition-all flex items-center gap-1 cursor-pointer"
+                className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 active:scale-95 text-white text-[11px] sm:text-xs font-bold shadow-xs hover:shadow transition-all flex items-center gap-1 cursor-pointer shrink-0"
                 title="무통장 입금으로 토큰 즉시 충전 (Agent M 자동 감지)"
               >
-                <Zap className="w-3.5 h-3.5" />
+                <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 <span>충전</span>
               </button>
             </div>
 
-            {/* 사용자 프로필 */}
-            <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200">
+            {/* 사용자 프로필 (중형 화면 이상) */}
+            <div className="hidden md:flex items-center gap-2 pl-2 border-l border-slate-200">
               <img
                 src={data?.user?.avatar_url || 'https://ldb-phinf.pstatic.net/20250613_51/1749793026669I569w_JPEG/%C6%FE%BD%C5%BD%C9%BA%BC1.jpg'}
                 alt="Profile"
                 className="w-8 h-8 rounded-full object-cover ring-2 ring-indigo-200"
               />
-              <span className="hidden sm:inline text-xs font-semibold text-slate-800">
+              <span className="text-xs font-semibold text-slate-800">
                 {data?.user?.name || '퐁신제빵소 사장님'}
               </span>
             </div>
 
-            {/* 온보딩 및 로그인 바로가기 */}
-            <div className="flex items-center gap-1.5 pl-2 border-l border-slate-200">
+            {/* 데스크톱 전용 네비게이션 메뉴 (대형 화면) */}
+            <div className="hidden xl:flex items-center gap-1.5 pl-2 border-l border-slate-200">
               <a
                 href="/library"
                 className="px-2.5 py-1 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition border border-indigo-200 flex items-center gap-1"
@@ -165,7 +168,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setShowAppModal(true)}
-                className="px-2.5 py-1 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition border border-emerald-200 flex items-center gap-1"
+                className="px-2.5 py-1 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition border border-emerald-200 flex items-center gap-1 cursor-pointer"
               >
                 <span>📱 안드로이드 앱</span>
               </button>
@@ -194,8 +197,86 @@ export default function DashboardPage() {
                 🛡️ 관리자
               </a>
             </div>
+
+            {/* 모바일 햄버거 토글 버튼 (xl 미만 화면) */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="xl:hidden p-1.5 sm:p-2 rounded-xl text-slate-600 hover:text-indigo-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              aria-label="메뉴 열기"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5 text-slate-800" /> : <Menu className="w-5 h-5 text-slate-800" />}
+            </button>
           </div>
         </div>
+
+        {/* 모바일 슬라이드다운 메뉴 (xl 미만) */}
+        {mobileMenuOpen && (
+          <div className="xl:hidden mt-3 pt-3 border-t border-slate-100 max-w-7xl mx-auto animate-in slide-in-from-top-2 duration-200">
+            <div className="flex items-center gap-3 p-2 mb-2 rounded-xl bg-slate-50 border border-slate-100">
+              <img
+                src={data?.user?.avatar_url || 'https://ldb-phinf.pstatic.net/20250613_51/1749793026669I569w_JPEG/%C6%FE%BD%C5%BD%C9%BA%BC1.jpg'}
+                alt="Profile"
+                className="w-8 h-8 rounded-full object-cover ring-2 ring-indigo-200"
+              />
+              <div className="flex flex-col">
+                <span className="text-xs font-bold text-slate-900">{data?.user?.name || '퐁신제빵소 사장님'}</span>
+                <span className="text-[11px] text-slate-500">{data?.business?.name || '퐁신제빵소'} 대표</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+              <a
+                href="/library"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-xl bg-indigo-50/70 border border-indigo-100 text-indigo-900 font-bold flex items-center justify-between"
+              >
+                <span>📦 에셋 보관함</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-600 text-white font-mono">
+                  {data?.assets?.length || 0}
+                </span>
+              </a>
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setShowAppModal(true);
+                }}
+                className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-100 text-emerald-900 font-bold flex items-center gap-1.5 text-left cursor-pointer"
+              >
+                <span>📱 안드로이드 앱</span>
+              </button>
+              <a
+                href="/calendar"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-800 font-semibold flex items-center gap-1.5"
+              >
+                <span>📅 마케팅 캘린더</span>
+              </a>
+              <a
+                href="/references"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-800 font-semibold flex items-center gap-1.5"
+              >
+                <span>🧭 레퍼런스 인텔리전스</span>
+              </a>
+              <a
+                href="/onboarding"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-800 font-semibold flex items-center gap-1.5"
+              >
+                <span>🏢 비즈니스 등록</span>
+              </a>
+              <a
+                href="/admin"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-xl bg-rose-50/70 border border-rose-200 text-rose-800 font-bold flex items-center gap-1.5"
+              >
+                <span>🛡️ 슈퍼 관리자</span>
+              </a>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* 메인 콘텐츠 영역 */}
@@ -595,8 +676,10 @@ export default function DashboardPage() {
         </section>
       </main>
 
-      {/* 푸터 (사업자 정보 & 법무 약관 연동) */}
-      <Footer initialConfig={data?.footer} />
+      {/* 푸터 (사업자 정보 & 법무 약관 연동 - 모바일 하단 내비게이션 바와 여백 확보) */}
+      <div className="pb-16 sm:pb-0">
+        <Footer initialConfig={data?.footer} />
+      </div>
 
       {/* 📱 안드로이드 앱 설치 및 APK 안내 모달 */}
       {showAppModal && (

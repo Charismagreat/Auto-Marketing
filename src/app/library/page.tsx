@@ -196,39 +196,40 @@ export default function AssetLibraryPage() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       {/* 헤더 */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 lg:px-8 py-3.5">
+      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 lg:px-8 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2 text-indigo-600 font-bold text-sm hover:text-indigo-800 transition">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link href="/" className="flex items-center gap-1.5 text-indigo-600 font-bold text-xs sm:text-sm hover:text-indigo-800 transition shrink-0">
               <ArrowLeft className="w-4 h-4" />
-              <span>대시보드로 돌아가기</span>
+              <span className="hidden xs:inline">대시보드로 돌아가기</span>
+              <span className="xs:hidden">대시보드</span>
             </Link>
             <span className="text-slate-300">|</span>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-xs">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-xs shrink-0">
                 <FolderArchive className="w-4 h-4" />
               </div>
-              <span className="font-extrabold text-base text-slate-900">
-                마케팅 에셋 보관함 (Asset Library)
+              <span className="font-extrabold text-sm sm:text-base text-slate-900 truncate">
+                마케팅 에셋 보관함
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={fetchAssets}
               disabled={loading}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 transition"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 transition cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-              <span>새로고침</span>
+              <span className="hidden xs:inline">새로고침</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* 메인 */}
-      <main className="max-w-7xl mx-auto w-full px-4 lg:px-8 py-8 flex-1 space-y-6">
+      <main className="max-w-7xl mx-auto w-full px-4 lg:px-8 py-6 sm:py-8 flex-1 space-y-6">
         
         {/* 상단 브리핑 카드 */}
         <div className="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-indigo-950/20">
@@ -505,6 +506,11 @@ export default function AssetLibraryPage() {
           </div>
         </div>
       )}
+
+      {/* 푸터 (모바일 하단 내비바 세이프 패딩) */}
+      <div className="pb-16 sm:pb-0 mt-8">
+        <Footer />
+      </div>
 
     </div>
   );

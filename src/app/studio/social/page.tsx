@@ -327,7 +327,7 @@ export default function SocialStudioPage() {
   const currentCard = slides[currentSlide];
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col pb-16 sm:pb-0">
       {/* 상단 툴바 */}
       <header className="sticky top-0 z-30 bg-slate-800/90 backdrop-blur-md border-b border-slate-700 px-4 lg:px-8 py-3">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">

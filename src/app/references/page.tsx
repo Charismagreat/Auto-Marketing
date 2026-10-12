@@ -136,31 +136,32 @@ export default function ReferencesPage() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* 상단 네비게이션 */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 lg:px-8 py-3.5">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2 text-indigo-600 font-bold text-sm">
-              <span>← 메인 대시보드로 돌아가기</span>
+      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 lg:px-8 py-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <Link href="/" className="flex items-center gap-1.5 text-indigo-600 font-bold text-xs sm:text-sm shrink-0 hover:text-indigo-800 transition">
+              <span className="hidden xs:inline">← 대시보드로 돌아가기</span>
+              <span className="xs:hidden">← 대시보드</span>
             </Link>
             <span className="text-slate-300">|</span>
-            <span className="font-extrabold text-base text-slate-900 flex items-center gap-2">
-              <Compass className="w-5 h-5 text-indigo-600" />
-              벤치마크 레퍼런스 인텔리전스
+            <span className="font-extrabold text-sm sm:text-base text-slate-900 flex items-center gap-1.5 truncate">
+              <Compass className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600 shrink-0" />
+              <span className="truncate">벤치마크 레퍼런스</span>
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <Link
               href="/studio/video"
-              className="text-xs font-bold px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors"
+              className="text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors"
             >
               숏폼 스튜디오
             </Link>
             <Link
               href="/studio/detail"
-              className="text-xs font-bold px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors"
+              className="text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors"
             >
-              상세페이지 스튜디오
+              상세페이지
             </Link>
           </div>
         </div>
@@ -418,8 +419,10 @@ export default function ReferencesPage() {
         </div>
       </main>
 
-      {/* 푸터 영역 */}
-      <Footer />
+      {/* 푸터 영역 (모바일 하단 내비바 세이프 패딩) */}
+      <div className="pb-16 sm:pb-0">
+        <Footer />
+      </div>
     </div>
   );
 }

@@ -217,37 +217,38 @@ export default function CalendarPage() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       {/* 헤더 */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 lg:px-8 py-3.5">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2 text-indigo-600 font-bold text-sm">
+      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 lg:px-8 py-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <Link href="/" className="flex items-center gap-1.5 text-indigo-600 font-bold text-xs sm:text-sm hover:text-indigo-800 transition shrink-0">
               <ArrowLeft className="w-4 h-4" />
-              <span>대시보드로 돌아가기</span>
+              <span className="hidden xs:inline">대시보드</span>
             </Link>
-            <Link href="/library" className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-indigo-50 text-indigo-700 text-xs font-bold hover:bg-indigo-100 transition border border-indigo-200">
+            <Link href="/library" className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-indigo-50 text-indigo-700 text-xs font-bold hover:bg-indigo-100 transition border border-indigo-200 shrink-0">
               <span>📦 에셋 보관함</span>
             </Link>
-            <span className="text-slate-300">|</span>
-            <div className="flex items-center gap-2">
-              <CalendarIcon className="w-5 h-5 text-indigo-600" />
-              <span className="font-extrabold text-base text-slate-900">
-                AI 마케팅 오토 캘린더 & 캠페인 스케줄러
+            <span className="hidden sm:inline text-slate-300">|</span>
+            <div className="flex items-center gap-1.5 min-w-0">
+              <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600 shrink-0" />
+              <span className="font-extrabold text-sm sm:text-base text-slate-900 truncate">
+                AI 마케팅 오토 캘린더
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handleAutoGenerateWeek}
               disabled={autoGenerating}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-600 hover:to-indigo-700 text-white font-extrabold text-xs shadow-md transition disabled:opacity-50"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-600 hover:to-indigo-700 text-white font-extrabold text-xs shadow-md transition disabled:opacity-50 cursor-pointer"
             >
               {autoGenerating ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
               ) : (
-                <Sparkles className="w-4 h-4 text-amber-200" />
+                <Sparkles className="w-3.5 h-3.5 text-amber-200" />
               )}
-              <span>{autoGenerating ? '7일 스케줄 AI 기획 중...' : '⚡ AI 주간 7일 오토파일럿 플래닝'}</span>
+              <span className="hidden xs:inline">{autoGenerating ? 'AI 기획 중...' : '⚡ AI 7일 오토파일럿'}</span>
+              <span className="xs:hidden">{autoGenerating ? '생성 중' : '⚡ 7일 플래닝'}</span>
             </button>
 
             <button
@@ -514,6 +515,11 @@ export default function CalendarPage() {
           </div>
         </div>
       )}
+
+      {/* 푸터 (모바일 하단 내비바 세이프 패딩) */}
+      <div className="pb-16 sm:pb-0 mt-8">
+        <Footer />
+      </div>
     </div>
   );
 }

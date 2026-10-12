@@ -801,6 +801,12 @@ async function seedInitialData() {
         deposit_bank_name: '카카오뱅크',
         deposit_account_number: '3333-12-1695965',
         deposit_account_holder: '차호석',
+        sns_channels: JSON.stringify([
+          { id: 'sns_youtube', type: 'youtube', name: '유튜브 공식 채널', url: 'https://youtube.com/@auto-marketing', enabled: true },
+          { id: 'sns_instagram', type: 'instagram', name: '인스타그램 공식 계정', url: 'https://instagram.com/auto_marketing_kr', enabled: true },
+          { id: 'sns_blog', type: 'blog', name: '네이버 공식 블로그', url: 'https://blog.naver.com/auto_marketing', enabled: true },
+          { id: 'sns_kakao', type: 'kakao', name: '카카오톡 1:1 상담 채널', url: 'https://pf.kakao.com/_auto_marketing', enabled: true }
+        ]),
         terms_of_service: TERMS_OF_SERVICE_FULL,
         privacy_policy: PRIVACY_POLICY_FULL,
         refund_policy: REFUND_POLICY_FULL,
@@ -808,12 +814,24 @@ async function seedInitialData() {
       }
     ]).catch(console.error);
   } else {
-    // 기존 레코드에 전문 및 계좌 정보 업데이트
+    // 기존 레코드에 전문, 계좌 정보, SNS 채널 업데이트
     try {
       const { executeSQL } = await import('@/lib/egdesk-helpers');
       const escapedTerms = TERMS_OF_SERVICE_FULL.replace(/'/g, "''");
       const escapedPrivacy = PRIVACY_POLICY_FULL.replace(/'/g, "''");
       const escapedRefund = REFUND_POLICY_FULL.replace(/'/g, "''");
+      const defaultSns = JSON.stringify([
+        { id: 'sns_youtube', type: 'youtube', name: '유튜브 공식 채널', url: 'https://youtube.com/@auto-marketing', enabled: true },
+        { id: 'sns_instagram', type: 'instagram', name: '인스타그램 공식 계정', url: 'https://instagram.com/auto_marketing_kr', enabled: true },
+        { id: 'sns_blog', type: 'blog', name: '네이버 공식 블로그', url: 'https://blog.naver.com/auto_marketing', enabled: true },
+        { id: 'sns_kakao', type: 'kakao', name: '카카오톡 1:1 상담 채널', url: 'https://pf.kakao.com/_auto_marketing', enabled: true }
+      ]).replace(/'/g, "''");
+
+      // 컬럼 존재 여부 안전 보장
+      try {
+        await executeSQL('ALTER TABLE auto_footer_configs ADD COLUMN sns_channels TEXT;');
+      } catch (_) {}
+
       await executeSQL(`
         UPDATE auto_footer_configs 
         SET terms_of_service = '${escapedTerms}',
@@ -821,7 +839,12 @@ async function seedInitialData() {
             refund_policy = '${escapedRefund}',
             deposit_bank_name = COALESCE(deposit_bank_name, '카카오뱅크'),
             deposit_account_number = COALESCE(deposit_account_number, '3333-12-1695965'),
-            deposit_account_holder = COALESCE(deposit_account_holder, '차호석')
+            deposit_account_holder = COALESCE(deposit_account_holder, '차호석'),
+            sns_channels = CASE 
+              WHEN sns_channels IS NULL OR sns_channels = '' OR sns_channels = '[]' 
+              THEN '${defaultSns}' 
+              ELSE sns_channels 
+            END
         WHERE id = 'default_footer';
       `);
     } catch (e) {
@@ -1169,6 +1192,7 @@ export async function setupDatabase(force = false) {
       { name: 'deposit_bank_name', type: 'TEXT' },
       { name: 'deposit_account_number', type: 'TEXT' },
       { name: 'deposit_account_holder', type: 'TEXT' },
+      { name: 'sns_channels', type: 'TEXT' },
       { name: 'terms_of_service', type: 'TEXT' },
       { name: 'privacy_policy', type: 'TEXT' },
       { name: 'refund_policy', type: 'TEXT' },

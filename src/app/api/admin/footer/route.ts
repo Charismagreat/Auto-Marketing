@@ -2,6 +2,14 @@ import { NextResponse } from 'next/server';
 import { setupDatabase, queryTable } from '@/lib/setup-db';
 import { executeSQL } from '@/lib/egdesk-helpers';
 
+export interface SnsChannel {
+  id: string;
+  type: 'youtube' | 'instagram' | 'blog' | 'github' | 'kakao' | 'twitter' | 'custom';
+  name: string;
+  url: string;
+  enabled: boolean;
+}
+
 export interface FooterConfig {
   companyName: string;
   ceoName: string;
@@ -16,10 +24,18 @@ export interface FooterConfig {
   depositBankName: string;
   depositAccountNumber: string;
   depositAccountHolder: string;
+  sns_channels: SnsChannel[];
   termsOfService: string;
   privacyPolicy: string;
   refundPolicy: string;
 }
+
+const DEFAULT_SNS_CHANNELS: SnsChannel[] = [
+  { id: 'sns_youtube', type: 'youtube', name: '유튜브 공식 채널', url: 'https://youtube.com/@auto-marketing', enabled: true },
+  { id: 'sns_instagram', type: 'instagram', name: '인스타그램 공식 계정', url: 'https://instagram.com/auto_marketing_kr', enabled: true },
+  { id: 'sns_blog', type: 'blog', name: '네이버 공식 블로그', url: 'https://blog.naver.com/auto_marketing', enabled: true },
+  { id: 'sns_kakao', type: 'kakao', name: '카카오톡 1:1 상담 채널', url: 'https://pf.kakao.com/_auto_marketing', enabled: true },
+];
 
 const DEFAULT_FOOTER: FooterConfig = {
   companyName: '(주)오토마케팅',
@@ -35,6 +51,7 @@ const DEFAULT_FOOTER: FooterConfig = {
   depositBankName: '카카오뱅크',
   depositAccountNumber: '3333-12-1695965',
   depositAccountHolder: '차호석',
+  sns_channels: DEFAULT_SNS_CHANNELS,
   termsOfService: '',
   privacyPolicy: '',
   refundPolicy: '',
@@ -45,6 +62,18 @@ export async function GET() {
     await setupDatabase();
     const res = await queryTable('auto_footer_configs', { limit: 1 }).catch(() => ({ rows: [] }));
     const row = res.rows?.[0];
+
+    let snsChannels: SnsChannel[] = DEFAULT_SNS_CHANNELS;
+    if (row?.sns_channels) {
+      try {
+        const parsed = JSON.parse(row.sns_channels);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          snsChannels = parsed;
+        }
+      } catch (e) {
+        console.warn('Failed to parse sns_channels:', e);
+      }
+    }
 
     const data: FooterConfig = row
       ? {
@@ -61,6 +90,7 @@ export async function GET() {
           depositBankName: row.deposit_bank_name || DEFAULT_FOOTER.depositBankName,
           depositAccountNumber: row.deposit_account_number || DEFAULT_FOOTER.depositAccountNumber,
           depositAccountHolder: row.deposit_account_holder || DEFAULT_FOOTER.depositAccountHolder,
+          sns_channels: snsChannels,
           termsOfService: row.terms_of_service || DEFAULT_FOOTER.termsOfService,
           privacyPolicy: row.privacy_policy || DEFAULT_FOOTER.privacyPolicy,
           refundPolicy: row.refund_policy || DEFAULT_FOOTER.refundPolicy,
@@ -102,6 +132,10 @@ export async function PUT(req: Request) {
     if (body.depositBankName !== undefined) sets.push(`deposit_bank_name = '${escape(body.depositBankName)}'`);
     if (body.depositAccountNumber !== undefined) sets.push(`deposit_account_number = '${escape(body.depositAccountNumber)}'`);
     if (body.depositAccountHolder !== undefined) sets.push(`deposit_account_holder = '${escape(body.depositAccountHolder)}'`);
+    if (body.sns_channels !== undefined) {
+      const snsJson = JSON.stringify(body.sns_channels);
+      sets.push(`sns_channels = '${escape(snsJson)}'`);
+    }
     if (body.termsOfService !== undefined) sets.push(`terms_of_service = '${escape(body.termsOfService)}'`);
     if (body.privacyPolicy !== undefined) sets.push(`privacy_policy = '${escape(body.privacyPolicy)}'`);
     if (body.refundPolicy !== undefined) sets.push(`refund_policy = '${escape(body.refundPolicy)}'`);

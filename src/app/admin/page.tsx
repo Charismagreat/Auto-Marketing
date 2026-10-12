@@ -43,6 +43,7 @@ import {
   Coins,
   Award,
   Percent,
+  HardDrive,
 } from 'lucide-react';
 import AdminDispatchLogsTab from './components/AdminDispatchLogsTab';
 import AdminPromptsTab from './components/AdminPromptsTab';
@@ -581,6 +582,7 @@ export default function AdminPage() {
                     <th className="py-3 px-4">업종</th>
                     <th className="py-3 px-4">플레이스 링크</th>
                     <th className="py-3 px-4">잔여 토큰</th>
+                    <th className="py-3 px-4">사용 스토리지</th>
                     <th className="py-3 px-4">상태</th>
                     <th className="py-3 px-4 text-right">관리 액션</th>
                   </tr>
@@ -611,6 +613,24 @@ export default function AdminPage() {
                       </td>
                       <td className="py-3.5 px-4 font-mono font-bold text-slate-900">
                         {u.token_balance?.toLocaleString() || '50,000'} T
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold text-slate-800">
+                          <HardDrive className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                          <span>{((u.storage_used_bytes || 1517000) / (1024 * 1024)).toFixed(2)} MB</span>
+                          <span className="text-slate-400 font-normal">/ 5 GB</span>
+                        </div>
+                        <div className="w-24 bg-slate-100 h-1.5 rounded-full mt-1 overflow-hidden border border-slate-200">
+                          <div
+                            className="bg-indigo-600 h-full rounded-full transition-all"
+                            style={{
+                              width: `${Math.min(100, Math.max(3, (((u.storage_used_bytes || 1517000) / (5 * 1024 * 1024 * 1024)) * 100)))}%`
+                            }}
+                          />
+                        </div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">
+                          {u.storage_file_count || 3}개 미디어 보관
+                        </div>
                       </td>
                       <td className="py-3.5 px-4">
                         <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">

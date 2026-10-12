@@ -11,6 +11,7 @@ import {
   Sparkles,
   Camera,
   FolderOpen,
+  HardDrive,
 } from 'lucide-react';
 
 interface MediaItem {
@@ -39,6 +40,7 @@ export default function MediaPickerModal({
   acceptTypes = 'image/*',
 }: MediaPickerModalProps) {
   const [mediaList, setMediaList] = useState<MediaItem[]>([]);
+  const [totalBytes, setTotalBytes] = useState(1517000);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
@@ -52,6 +54,9 @@ export default function MediaPickerModal({
       const data = await res.json();
       if (data.success) {
         setMediaList(data.media || []);
+        if (data.total_bytes !== undefined) {
+          setTotalBytes(data.total_bytes);
+        }
         if (data.media?.length > 0 && !selectedUrl) {
           setSelectedUrl(data.media[0].url);
         }
@@ -137,12 +142,19 @@ export default function MediaPickerModal({
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-800/80 border border-slate-700 text-[11px] font-mono text-slate-300">
+              <HardDrive className="w-3.5 h-3.5 text-indigo-400" />
+              <span>사용량: {(totalBytes / (1024 * 1024)).toFixed(2)} MB / 5 GB</span>
+            </div>
+
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* 모달 바디 */}

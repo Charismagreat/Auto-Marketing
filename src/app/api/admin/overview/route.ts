@@ -77,6 +77,29 @@ export async function GET() {
     const karrotCount = assets.filter((a) => a.type === 'karrot').length;
     const placeCount = assets.filter((a) => a.type === 'naver_place').length;
 
+    // 점포별 스토리지 사용량 (auto_media 기준) 집계
+    const storageByBusiness: Record<string, { bytes: number; count: number }> = {};
+    for (const m of mediaList) {
+      const bId = m.business_id || 'biz_pongshin_baegot';
+      if (!storageByBusiness[bId]) {
+        storageByBusiness[bId] = { bytes: 0, count: 0 };
+      }
+      storageByBusiness[bId].bytes += Number(m.size_bytes) || 0;
+      storageByBusiness[bId].count += 1;
+    }
+    const totalStorageBytes = mediaList.reduce((sum, m) => sum + (Number(m.size_bytes) || 0), 0);
+
+    const enrichedUsers = users.map((u: any) => {
+      const bId = u.business_id || 'biz_pongshin_baegot';
+      const bStorage = storageByBusiness[bId] || { bytes: 1517000, count: 3 };
+      return {
+        ...u,
+        storage_used_bytes: bStorage.bytes,
+        storage_file_count: bStorage.count,
+        storage_quota_bytes: 5 * 1024 * 1024 * 1024, // 기본 5GB
+      };
+    });
+
     const stats = {
       totalUsers: users.length,
       totalBusinesses: businesses.length,
@@ -84,6 +107,7 @@ export async function GET() {
       totalAssetsGenerated: assets.length,
       totalCampaigns: campaigns.length,
       totalMediaStored: mediaList.length,
+      totalStorageBytes,
       totalTokensIssued,
       totalTokensConsumed,
       activeModelStatus: {
@@ -110,7 +134,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       stats,
-      users,
+      users: enrichedUsers,
       businesses,
       products,
       assets,

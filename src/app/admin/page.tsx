@@ -37,6 +37,8 @@ import {
   FileCheck2,
   HelpCircle,
   Building2,
+  LayoutGrid,
+  ListFilter,
 } from 'lucide-react';
 import AdminDispatchLogsTab from './components/AdminDispatchLogsTab';
 import AdminPromptsTab from './components/AdminPromptsTab';
@@ -49,10 +51,75 @@ import AdminTaxInvoicesTab from './components/AdminTaxInvoicesTab';
 import AdminFooterTab from './components/AdminFooterTab';
 import AdminFaqsTab from './components/AdminFaqsTab';
 
+// 15대 관제 탭을 비즈니스 도메인별 5대 핵심 카테고리로 체계화
+const TAB_GROUPS = [
+  {
+    id: 'finance',
+    name: '👥 회원 & 재무',
+    description: '점주 계정, 토큰 충전, AI 모델 원가 및 전자세금계산서',
+    tabs: [
+      { id: 'users', label: '1. 소상공인 회원/매장', icon: Users },
+      { id: 'tokens', label: '2. 토큰 & SaaS 요금제', icon: Wallet },
+      { id: 'pricing', label: '3. AI 원가 & 마진율', icon: DollarSign },
+      { id: 'tax', label: '4. 세무 & 전자세금계산서', icon: FileCheck2 },
+    ],
+  },
+  {
+    id: 'marketing',
+    name: '🚀 마케팅 & 자동화 관제',
+    description: '7대 채널 에셋 감사, 주간 오토파일럿, 외부 API 디스패치 및 스마트 룰',
+    tabs: [
+      { id: 'assets', label: '5. 생성 에셋 통합 감사', icon: FileCheck },
+      { id: 'campaigns', label: '6. 주간 오토파일럿 & 발행 큐', icon: Calendar },
+      { id: 'dispatch', label: '7. 외부 채널 디스패치 로그', icon: Radio },
+      { id: 'rules', label: '11. 스마트 자동화 룰', icon: Zap },
+    ],
+  },
+  {
+    id: 'ai',
+    name: '🧠 AI 엔지니어링',
+    description: '7대 채널 프롬프트 튜닝 스튜디오 및 9대 엔진 인프라 헬스체크',
+    tabs: [
+      { id: 'prompts', label: '8. AI 프롬프트 튜닝', icon: Sliders },
+      { id: 'system', label: '15. AI 모델 믹스 & 인프라', icon: Cpu },
+    ],
+  },
+  {
+    id: 'support',
+    name: '💬 점주 소통 & CS',
+    description: '1:1 문의 티켓, AI 자동 답변 초안 생성, SMS/알림톡 발송, FAQ',
+    tabs: [
+      { id: 'inquiries', label: '9. 점주 CS 문의 & AI 답변', icon: MessageSquare },
+      { id: 'sms', label: '10. SMS / 알림톡 발송', icon: Smartphone },
+      { id: 'faqs', label: '12. 자주 묻는 질문 FAQ', icon: HelpCircle },
+    ],
+  },
+  {
+    id: 'legal',
+    name: '📜 콘텐츠 & 법무 CMS',
+    description: '업종별 바이럴 레퍼런스 및 통신판매업 법적 고지/이용약관/환불규정',
+    tabs: [
+      { id: 'cms', label: '14. 바이럴 레퍼런스 CMS', icon: Compass },
+      { id: 'footer', label: '13. 사업자 정보 & 법무 약관', icon: Building2 },
+    ],
+  },
+] as const;
+
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<
     'users' | 'tokens' | 'pricing' | 'tax' | 'assets' | 'campaigns' | 'dispatch' | 'prompts' | 'inquiries' | 'sms' | 'rules' | 'faqs' | 'footer' | 'cms' | 'system'
   >('users');
+  const [selectedGroupId, setSelectedGroupId] = useState<string>('finance');
+  const [viewMode, setViewMode] = useState<'grouped' | 'all'>('grouped');
+
+  // activeTab 변경 시 속한 그룹 자동 매핑
+  useEffect(() => {
+    const parentGroup = TAB_GROUPS.find((g) => g.tabs.some((t) => t.id === activeTab));
+    if (parentGroup && parentGroup.id !== selectedGroupId) {
+      setSelectedGroupId(parentGroup.id);
+    }
+  }, [activeTab]);
+
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
@@ -218,187 +285,115 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* 6대 관제 탭 네비게이션 */}
-        <div className="flex items-center gap-2 border-b border-slate-800 overflow-x-auto pb-1">
-          <button
-            onClick={() => setActiveTab('users')}
-            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
-              activeTab === 'users'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <Users className="w-4 h-4" />
-            <span>1. 소상공인 회원/매장</span>
-          </button>
+        {/* 15대 관제 탭 2-Tier 스마트 네비게이션 */}
+        <div className="space-y-3 bg-slate-950/80 p-4 sm:p-5 rounded-3xl border border-slate-800 shadow-xl">
+          {/* 상단 1단: 5대 도메인 카테고리 탭 & 뷰 모드 토글 */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+            <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+              <span className="text-xs font-bold text-slate-400 mr-1.5 flex items-center gap-1 shrink-0">
+                <ListFilter className="w-3.5 h-3.5 text-indigo-400" /> 도메인 분류:
+              </span>
+              {TAB_GROUPS.map((group) => {
+                const isGroupActive = selectedGroupId === group.id;
+                return (
+                  <button
+                    key={group.id}
+                    onClick={() => {
+                      setSelectedGroupId(group.id);
+                      setActiveTab(group.tabs[0].id as any);
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                      isGroupActive
+                        ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-900/40 ring-1 ring-indigo-400/50'
+                        : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800'
+                    }`}
+                  >
+                    <span>{group.name}</span>
+                    <span
+                      className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
+                        isGroupActive ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-500'
+                      }`}
+                    >
+                      {group.tabs.length}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
 
-          <button
-            onClick={() => setActiveTab('tokens')}
-            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
-              activeTab === 'tokens'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <Wallet className="w-4 h-4" />
-            <span>2. 토큰 & SaaS 요금제</span>
-          </button>
+            {/* 전체 15개 펼쳐보기 토글 버튼 */}
+            <button
+              onClick={() => setViewMode(viewMode === 'grouped' ? 'all' : 'grouped')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 border cursor-pointer ${
+                viewMode === 'all'
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                  : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white hover:bg-slate-800'
+              }`}
+              title="15대 전체 탭 펼침/접힘 토글"
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>{viewMode === 'all' ? '도메인 2단 뷰로 접기' : '15대 전체 탭 펼쳐보기'}</span>
+            </button>
+          </div>
 
-          <button
-            onClick={() => setActiveTab('pricing')}
-            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
-              activeTab === 'pricing'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <DollarSign className="w-4 h-4" />
-            <span>3. AI 원가 & 마진율</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('tax')}
-            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
-              activeTab === 'tax'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <FileCheck2 className="w-4 h-4" />
-            <span>4. 세무 & 전자세금계산서</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('assets')}
-            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
-              activeTab === 'assets'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <FileCheck className="w-4 h-4" />
-            <span>5. 생성 에셋 통합 감사</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('campaigns')}
-            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
-              activeTab === 'campaigns'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <Calendar className="w-4 h-4" />
-            <span>6. 주간 오토파일럿 & 발행 큐</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('dispatch')}
-            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
-              activeTab === 'dispatch'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <Radio className="w-4 h-4" />
-            <span>7. 외부 채널 디스패치 로그</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('prompts')}
-            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
-              activeTab === 'prompts'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <Sliders className="w-4 h-4" />
-            <span>8. AI 프롬프트 튜닝</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('inquiries')}
-            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
-              activeTab === 'inquiries'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <MessageSquare className="w-4 h-4" />
-            <span>9. 점주 CS 문의 & AI 답변</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('sms')}
-            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
-              activeTab === 'sms'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <Smartphone className="w-4 h-4" />
-            <span>10. SMS / 알림톡 발송</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('rules')}
-            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
-              activeTab === 'rules'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <Zap className="w-4 h-4" />
-            <span>11. 스마트 자동화 룰</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('faqs')}
-            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
-              activeTab === 'faqs'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <HelpCircle className="w-4 h-4" />
-            <span>12. 자주 묻는 질문 FAQ</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('footer')}
-            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
-              activeTab === 'footer'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <Building2 className="w-4 h-4" />
-            <span>13. 사업자 정보 & 법무 약관</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('cms')}
-            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
-              activeTab === 'cms'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <Compass className="w-4 h-4" />
-            <span>14. 바이럴 레퍼런스 CMS</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('system')}
-            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
-              activeTab === 'system'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <Cpu className="w-4 h-4" />
-            <span>15. AI 모델 믹스 & 인프라</span>
-          </button>
+          {/* 상단 2단: 선택된 도메인의 서브 탭 (기본 2단 모드) */}
+          {viewMode === 'grouped' ? (
+            <div className="flex items-center gap-2 overflow-x-auto pt-1">
+              {TAB_GROUPS.find((g) => g.id === selectedGroupId)?.tabs.map((tab) => {
+                const IconComponent = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`flex items-center gap-2 px-4 py-2.5 font-bold text-xs rounded-2xl transition-all whitespace-nowrap cursor-pointer ${
+                      isActive
+                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 ring-1 ring-indigo-400/50'
+                        : 'bg-slate-900/90 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-800'
+                    }`}
+                  >
+                    <IconComponent className="w-4 h-4 text-indigo-400" />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            /* 전체 15개 탭 도메인별 5대 섹션 카드 그리드 뷰 (한눈에 전체 조망) */
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-1">
+              {TAB_GROUPS.map((group) => (
+                <div key={group.id} className="bg-slate-900/70 rounded-2xl border border-slate-800/90 p-3 space-y-2">
+                  <div className="text-[11px] font-black text-slate-300 border-b border-slate-800/80 pb-1.5 flex items-center justify-between">
+                    <span>{group.name}</span>
+                    <span className="text-[10px] text-slate-500 font-mono">{group.tabs.length}개</span>
+                  </div>
+                  <div className="space-y-1">
+                    {group.tabs.map((tab) => {
+                      const IconComponent = tab.icon;
+                      const isActive = activeTab === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => {
+                            setSelectedGroupId(group.id);
+                            setActiveTab(tab.id as any);
+                          }}
+                          className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-xl font-bold text-xs transition-all text-left truncate cursor-pointer ${
+                            isActive
+                              ? 'bg-indigo-600 text-white shadow-xs ring-1 ring-indigo-400/50'
+                              : 'text-slate-400 hover:text-white hover:bg-slate-800/80'
+                          }`}
+                        >
+                          <IconComponent className="w-3.5 h-3.5 shrink-0 text-indigo-400" />
+                          <span className="truncate">{tab.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* 탭 1: 소상공인 회원 및 사업장 관리 */}

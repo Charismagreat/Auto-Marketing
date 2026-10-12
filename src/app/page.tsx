@@ -56,7 +56,7 @@ export default function DashboardPage() {
   const [bundleResult, setBundleResult] = useState<any | null>(null);
 
   const handleGenerateBundle = async () => {
-    const targetProdId = selectedBundleProdId || data?.products?.[0]?.id;
+    const targetProdId = selectedBundleProdId || 'all';
     setGeneratingBundle(true);
     setBundleResult(null);
     try {
@@ -373,14 +373,20 @@ export default function DashboardPage() {
               {/* 상품 선택기 */}
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-1.5 border border-white/15">
                 <select
-                  value={selectedBundleProdId || data?.products?.[0]?.id || ''}
+                  value={selectedBundleProdId || 'all'}
                   onChange={(e) => setSelectedBundleProdId(e.target.value)}
                   disabled={generatingBundle}
                   className="bg-transparent text-white text-xs font-bold px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 w-full sm:w-auto"
                 >
+                  <option value="all" className="bg-slate-900 text-amber-300 font-bold">
+                    📋 [전체] 매장 전 메뉴 라인업 (전 품목 일괄 홍보)
+                  </option>
+                  <option value="bundle" className="bg-slate-900 text-pink-300 font-bold">
+                    🎁 [세트] 시그니처 3종 베스트 세트 (2,000원 할인 묶음)
+                  </option>
                   {data?.products?.map((p: any) => (
                     <option key={p.id} value={p.id} className="bg-slate-900 text-white">
-                      🍰 {p.name} ({p.price?.toLocaleString()}원)
+                      🍰 [단품] {p.name} ({p.price?.toLocaleString()}원)
                     </option>
                   ))}
                 </select>

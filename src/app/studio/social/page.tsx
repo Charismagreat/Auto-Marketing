@@ -64,9 +64,15 @@ export default function SocialStudioPage() {
           const prods = json.bundle.products || [];
           setBusiness(biz);
           setProducts(prods);
-          const initialProd = prods.length > 0 ? prods[0] : null;
-          setSelectedProduct(initialProd);
-          handleGenerateAll(biz, initialProd);
+          const allObj = {
+            id: 'all',
+            name: `${biz?.name || '퐁신제빵소'} 전 메뉴 라인업 (총 ${prods.length}종)`,
+            price: '전 품목 및 세트 구성',
+            description: prods.map((p: any) => `${p.name} (${Number(p.price).toLocaleString()}원)`).join(', '),
+            is_all: true,
+          };
+          setSelectedProduct(allObj);
+          handleGenerateAll(biz, allObj, 'all', prods);
         }
       } catch (err) {
         console.error('Social studio bootstrap error:', err);
@@ -76,16 +82,29 @@ export default function SocialStudioPage() {
   }, []);
 
   // 전체 콘텐츠 일괄 생성
-  const handleGenerateAll = async (biz = business, prod = selectedProduct) => {
-    handleGenerateBlog(biz, prod);
-    handleGenerateCards(biz, prod);
-    handleGenerateKarrot(biz, prod, karrotTemplate);
-    handleGeneratePlace(biz, prod, placeTemplate);
+  const handleGenerateAll = async (
+    biz = business,
+    prod = selectedProduct,
+    modeOverride?: string,
+    prodList = products
+  ) => {
+    const mode = modeOverride || (prod?.id === 'all' ? 'all' : prod?.id === 'bundle' ? 'bundle' : 'single');
+    handleGenerateBlog(biz, prod, mode, prodList);
+    handleGenerateCards(biz, prod, mode, prodList);
+    handleGenerateKarrot(biz, prod, karrotTemplate, mode, prodList);
+    handleGeneratePlace(biz, prod, placeTemplate, mode, prodList);
   };
 
   // 🌿 네이버 스마트플레이스 새소식 생성
-  const handleGeneratePlace = async (biz = business, prod = selectedProduct, tmpl = placeTemplate) => {
+  const handleGeneratePlace = async (
+    biz = business,
+    prod = selectedProduct,
+    tmpl = placeTemplate,
+    modeOverride?: string,
+    prodList = products
+  ) => {
     setLoading(true);
+    const mode = modeOverride || (prod?.id === 'all' ? 'all' : prod?.id === 'bundle' ? 'bundle' : 'single');
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
@@ -103,7 +122,11 @@ export default function SocialStudioPage() {
             name: prod?.name || '퐁신 오리지널 대만 카스테라',
             price: prod?.price || 11000,
             description: prod?.description || '',
+            is_all: prod?.is_all,
+            is_bundle: prod?.is_bundle,
           },
+          products: prodList,
+          mode,
         }),
       });
       const data = await res.json();
@@ -118,8 +141,15 @@ export default function SocialStudioPage() {
   };
 
   // 🥕 당근마켓 비즈프로필 소식글 생성
-  const handleGenerateKarrot = async (biz = business, prod = selectedProduct, tmpl = karrotTemplate) => {
+  const handleGenerateKarrot = async (
+    biz = business,
+    prod = selectedProduct,
+    tmpl = karrotTemplate,
+    modeOverride?: string,
+    prodList = products
+  ) => {
     setLoading(true);
+    const mode = modeOverride || (prod?.id === 'all' ? 'all' : prod?.id === 'bundle' ? 'bundle' : 'single');
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
@@ -137,7 +167,11 @@ export default function SocialStudioPage() {
             name: prod?.name || '퐁신 오리지널 대만 카스테라',
             price: prod?.price || 11000,
             description: prod?.description || '',
+            is_all: prod?.is_all,
+            is_bundle: prod?.is_bundle,
           },
+          products: prodList,
+          mode,
         }),
       });
       const data = await res.json();
@@ -152,8 +186,14 @@ export default function SocialStudioPage() {
   };
 
   // 블로그 생성
-  const handleGenerateBlog = async (biz = business, prod = selectedProduct) => {
+  const handleGenerateBlog = async (
+    biz = business,
+    prod = selectedProduct,
+    modeOverride?: string,
+    prodList = products
+  ) => {
     setLoading(true);
+    const mode = modeOverride || (prod?.id === 'all' ? 'all' : prod?.id === 'bundle' ? 'bundle' : 'single');
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
@@ -170,7 +210,11 @@ export default function SocialStudioPage() {
             name: prod?.name || '퐁신 오리지널 대만 카스테라',
             price: prod?.price || 11000,
             description: prod?.description || '',
+            is_all: prod?.is_all,
+            is_bundle: prod?.is_bundle,
           },
+          products: prodList,
+          mode,
         }),
       });
       const data = await res.json();
@@ -185,8 +229,14 @@ export default function SocialStudioPage() {
   };
 
   // 인스타 카드뉴스 생성
-  const handleGenerateCards = async (biz = business, prod = selectedProduct) => {
+  const handleGenerateCards = async (
+    biz = business,
+    prod = selectedProduct,
+    modeOverride?: string,
+    prodList = products
+  ) => {
     setLoading(true);
+    const mode = modeOverride || (prod?.id === 'all' ? 'all' : prod?.id === 'bundle' ? 'bundle' : 'single');
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
@@ -203,7 +253,11 @@ export default function SocialStudioPage() {
             name: prod?.name || '퐁신 오리지널 대만 카스테라',
             price: prod?.price || 11000,
             description: prod?.description || '',
+            is_all: prod?.is_all,
+            is_bundle: prod?.is_bundle,
           },
+          products: prodList,
+          mode,
         }),
       });
       const data = await res.json();
@@ -220,9 +274,30 @@ export default function SocialStudioPage() {
 
   // 상품 선택 변경 핸들러
   const handleProductChange = (prodId: string) => {
-    const found = products.find((p) => p.id === prodId) || null;
-    setSelectedProduct(found);
-    handleGenerateAll(business, found);
+    let chosen: any = null;
+    if (prodId === 'all') {
+      chosen = {
+        id: 'all',
+        name: `${business?.name || '퐁신제빵소'} 전 메뉴 라인업 (총 ${products.length}종)`,
+        price: '전 품목 및 세트 구성',
+        description: products.map((p) => `${p.name} (${Number(p.price).toLocaleString()}원)`).join(', '),
+        is_all: true,
+      };
+    } else if (prodId === 'bundle') {
+      const topSet = products.slice(0, 3);
+      const sum = topSet.reduce((acc, p) => acc + (Number(p.price) || 0), 0);
+      chosen = {
+        id: 'bundle',
+        name: `[세트 기획] ${business?.name || '퐁신제빵소'} 시그니처 3종 선물세트`,
+        price: `${Math.max(sum - 2000, 10000).toLocaleString()}원`,
+        description: `퐁신 대표 메뉴 3종(${topSet.map((p) => p.name).join(' + ')}) 선물 세트 (2,000원 할인)`,
+        is_bundle: true,
+      };
+    } else {
+      chosen = products.find((p) => p.id === prodId) || null;
+    }
+    setSelectedProduct(chosen);
+    handleGenerateAll(business, chosen, prodId === 'all' ? 'all' : prodId === 'bundle' ? 'bundle' : 'single');
   };
 
   // 대화형 핀셋 수정 (AI Tweak)
@@ -355,13 +430,15 @@ export default function SocialStudioPage() {
               <div className="flex items-center gap-2 ml-2 pl-3 border-l border-slate-200">
                 <Package className="w-3.5 h-3.5 text-amber-600" />
                 <select
-                  value={selectedProduct?.id || ''}
+                  value={selectedProduct?.id || 'all'}
                   onChange={(e) => handleProductChange(e.target.value)}
                   className="bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 >
+                  <option value="all">📋 [전체] 매장 전 메뉴 라인업 (전 품목 일괄)</option>
+                  <option value="bundle">🎁 [세트] 시그니처 3종 선물세트 묶음</option>
                   {products.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.name}
+                      🍰 [단품] {p.name}
                     </option>
                   ))}
                 </select>

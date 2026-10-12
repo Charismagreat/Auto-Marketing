@@ -64,12 +64,15 @@ export default function VideoStudioPage() {
           const prods = json.bundle.products || [];
           setBusiness(biz);
           setProducts(prods);
-          if (prods.length > 0) {
-            setSelectedProduct(prods[0]);
-            handleGenerateScript(biz, prods[0]);
-          } else {
-            handleGenerateScript(biz, null);
-          }
+          const allObj = {
+            id: 'all',
+            name: `${biz?.name || '퐁신제빵소'} 전 메뉴 라인업 (총 ${prods.length}종)`,
+            price: '전 품목 및 세트 구성',
+            description: prods.map((p: any) => `${p.name} (${Number(p.price).toLocaleString()}원)`).join(', '),
+            is_all: true,
+          };
+          setSelectedProduct(allObj);
+          handleGenerateScript(biz, allObj, 'all', prods);
         }
       } catch (err) {
         console.error('Video studio bootstrap error:', err);
@@ -79,8 +82,14 @@ export default function VideoStudioPage() {
   }, []);
 
   // 15초 숏폼 시나리오 자동 생성
-  const handleGenerateScript = async (biz = business, prod = selectedProduct) => {
+  const handleGenerateScript = async (
+    biz = business,
+    prod = selectedProduct,
+    modeOverride?: string,
+    prodList = products
+  ) => {
     setLoading(true);
+    const mode = modeOverride || (prod?.id === 'all' ? 'all' : prod?.id === 'bundle' ? 'bundle' : 'single');
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
@@ -96,7 +105,11 @@ export default function VideoStudioPage() {
             name: prod?.name || '퐁신 오리지널 대만 카스테라',
             price: prod?.price || 11000,
             description: prod?.description || '',
+            is_all: prod?.is_all,
+            is_bundle: prod?.is_bundle,
           },
+          products: prodList,
+          mode,
         }),
       });
       const data = await res.json();
@@ -113,9 +126,30 @@ export default function VideoStudioPage() {
 
   // 상품 선택 변경 핸들러
   const handleProductChange = (prodId: string) => {
-    const found = products.find((p) => p.id === prodId) || null;
-    setSelectedProduct(found);
-    handleGenerateScript(business, found);
+    let chosen: any = null;
+    if (prodId === 'all') {
+      chosen = {
+        id: 'all',
+        name: `${business?.name || '퐁신제빵소'} 전 메뉴 라인업 (총 ${products.length}종)`,
+        price: '전 품목 및 세트 구성',
+        description: products.map((p) => `${p.name} (${Number(p.price).toLocaleString()}원)`).join(', '),
+        is_all: true,
+      };
+    } else if (prodId === 'bundle') {
+      const topSet = products.slice(0, 3);
+      const sum = topSet.reduce((acc, p) => acc + (Number(p.price) || 0), 0);
+      chosen = {
+        id: 'bundle',
+        name: `[세트 기획] ${business?.name || '퐁신제빵소'} 시그니처 3종 선물세트`,
+        price: `${Math.max(sum - 2000, 10000).toLocaleString()}원`,
+        description: `퐁신 대표 메뉴 3종(${topSet.map((p) => p.name).join(' + ')}) 선물 세트 (2,000원 할인)`,
+        is_bundle: true,
+      };
+    } else {
+      chosen = products.find((p) => p.id === prodId) || null;
+    }
+    setSelectedProduct(chosen);
+    handleGenerateScript(business, chosen, prodId === 'all' ? 'all' : prodId === 'bundle' ? 'bundle' : 'single');
   };
 
   // TTS 음성 합성 상태
@@ -321,13 +355,15 @@ export default function VideoStudioPage() {
               <div className="flex items-center gap-2 ml-2 pl-3 border-l border-slate-200">
                 <Package className="w-3.5 h-3.5 text-amber-600" />
                 <select
-                  value={selectedProduct?.id || ''}
+                  value={selectedProduct?.id || 'all'}
                   onChange={(e) => handleProductChange(e.target.value)}
                   className="bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 >
+                  <option value="all">📋 [전체] 매장 전 메뉴 라인업 (랭킹/추천 숏폼)</option>
+                  <option value="bundle">🎁 [세트] 시그니처 3종 선물세트 묶음 (꿀조합 숏폼)</option>
                   {products.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.name}
+                      🍰 [단품] {p.name}
                     </option>
                   ))}
                 </select>

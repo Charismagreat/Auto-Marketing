@@ -46,23 +46,53 @@ export default function DetailStudioPage() {
           setBusiness(json.bundle.business);
           const prods = json.bundle.products || [];
           setProducts(prods);
-          if (prods.length > 0) {
-            setSelectedProductId(prods[0].id);
-            // 첫 번째 상품으로 상세페이지 생성
-            handleGenerate(json.bundle.business, prods[0]);
-          }
+          setSelectedProductId('all');
+          handleGenerate(json.bundle.business, undefined, undefined, 'all', prods);
         }
       })
       .catch((err) => console.error('Failed to load DB data:', err));
   }, []);
 
   // 상세페이지 생성 호출 (DB 데이터 기반 + 실물 사진 연동)
-  const handleGenerate = async (currentBiz = business, currentProd?: any, overrideImg = customImageUrl) => {
-    const baseProd = currentProd || products.find((p) => p.id === selectedProductId) || products[0];
-    const targetProd = baseProd ? {
-      ...baseProd,
-      image_url: overrideImg || baseProd.image_url,
-    } : { name: '대표 메뉴', image_url: overrideImg };
+  const handleGenerate = async (
+    currentBiz = business,
+    currentProd?: any,
+    overrideImg = customImageUrl,
+    targetMode?: string,
+    prodList = products
+  ) => {
+    const activeMode = targetMode || (selectedProductId === 'all' ? 'all' : selectedProductId === 'bundle' ? 'bundle' : 'single');
+    let targetProd = currentProd;
+
+    if (!targetProd) {
+      if (activeMode === 'all') {
+        targetProd = {
+          id: 'all',
+          name: `${currentBiz?.name || '퐁신제빵소'} 전 메뉴 라인업 컬렉션 (총 ${prodList.length}종)`,
+          price: '전 메뉴 및 세트 패키지',
+          description: prodList.map((p) => `${p.name}: ${Number(p.price).toLocaleString()}원`).join(', '),
+          image_url: overrideImg || prodList[0]?.image_url,
+          is_all: true,
+        };
+      } else if (activeMode === 'bundle') {
+        const topSet = prodList.slice(0, 3);
+        const sum = topSet.reduce((acc, p) => acc + (Number(p.price) || 0), 0);
+        targetProd = {
+          id: 'bundle',
+          name: `[세트 기획] ${currentBiz?.name || '퐁신제빵소'} 시그니처 베스트 3종 세트`,
+          price: `${Math.max(sum - 2000, 10000).toLocaleString()}원`,
+          description: `퐁신 대표 메뉴 3종(${topSet.map((p) => p.name).join(' + ')}) 선물 세트 (2,000원 할인)`,
+          image_url: overrideImg || topSet[0]?.image_url,
+          is_bundle: true,
+        };
+      } else {
+        const baseProd = prodList.find((p) => p.id === selectedProductId) || prodList[0];
+        targetProd = baseProd ? {
+          ...baseProd,
+          image_url: overrideImg || baseProd.image_url,
+        } : { name: '대표 메뉴', image_url: overrideImg };
+      }
+    }
 
     setLoading(true);
     try {
@@ -73,13 +103,14 @@ export default function DetailStudioPage() {
           type: 'detail',
           business: currentBiz || { name: '퐁신제빵소' },
           product: targetProd,
+          products: prodList,
+          mode: activeMode,
         }),
       });
       const data = await res.json();
       if (data.success && data.html) {
         let finalHtml = data.html;
         if (overrideImg) {
-          // HTML 내 이미지 src를 실물 업로드 사진으로 교체
           finalHtml = finalHtml.replace(/src="https:\/\/[^"]+"/g, `src="${overrideImg}"`);
         }
         setHtmlCode(finalHtml);
@@ -167,14 +198,15 @@ export default function DetailStudioPage() {
                 onChange={(e) => {
                   const newId = e.target.value;
                   setSelectedProductId(newId);
-                  const selectedProd = products.find((p) => p.id === newId);
-                  if (selectedProd) handleGenerate(business, selectedProd);
+                  handleGenerate(business, undefined, customImageUrl, newId, products);
                 }}
                 className="bg-slate-50 text-slate-900 text-xs px-2.5 py-1.5 rounded-xl border border-slate-200 font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               >
+                <option value="all">📋 [전체] 매장 전 메뉴 라인업 (전 품목 종합)</option>
+                <option value="bundle">🎁 [세트] 시그니처 3종 베스트 세트 (2,000원 할인)</option>
                 {products.map((p) => (
                   <option key={p.id} value={p.id}>
-                    🍰 {p.name} ({Number(p.price).toLocaleString()}원)
+                    🍰 [단품] {p.name} ({Number(p.price).toLocaleString()}원)
                   </option>
                 ))}
               </select>

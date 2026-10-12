@@ -24,6 +24,7 @@ import {
   HelpCircle,
   ArrowRight,
 } from 'lucide-react';
+import Footer from '@/components/Footer';
 
 interface BundleData {
   user: any;
@@ -33,6 +34,7 @@ interface BundleData {
   campaigns: any[];
   references: any[];
   faqs: any[];
+  footer?: any;
 }
 
 export default function DashboardPage() {
@@ -579,13 +581,8 @@ export default function DashboardPage() {
         </section>
       </main>
 
-      {/* 푸터 */}
-      <footer className="border-t border-slate-200 bg-white py-6 px-4 text-center text-xs text-slate-400">
-        <p>© 2026 Auto-Marketing SaaS. 소상공인과 중소기업의 마케팅 성공을 지원합니다.</p>
-        <p className="mt-1 text-[11px] text-slate-400">
-          Powered by EGDesk AI Engine • Single Click Marketing Automation
-        </p>
-      </footer>
+      {/* 푸터 (사업자 정보 & 법무 약관 연동) */}
+      <Footer initialConfig={data?.footer} />
 
       {/* 📱 안드로이드 앱 설치 및 APK 안내 모달 */}
       {showAppModal && (

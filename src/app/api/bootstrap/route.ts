@@ -73,6 +73,27 @@ export async function GET(req: NextRequest) {
     }).catch(() => ({ rows: [] }));
     const faqs = (faqRes.rows || []).filter((f: any) => f.is_published !== 0);
 
+    // 8. 사업자 정보 및 법무 약관
+    const footerRes = await queryTable('auto_footer_configs', { limit: 1 }).catch(() => ({ rows: [] }));
+    const footerRow = footerRes.rows?.[0];
+    const footer = footerRow
+      ? {
+          companyName: footerRow.company_name || '(주)오토마케팅',
+          ceoName: footerRow.ceo_name || '홍길동',
+          bizNumber: footerRow.biz_number || '123-86-09876',
+          mailOrderNumber: footerRow.mail_order_number || '제 2026-경기시흥-0412호',
+          address: footerRow.address || '경기도 시흥시 배곧4로 32-27, 골든플라자 5층 501호',
+          tel: footerRow.tel || '1588-0000',
+          email: footerRow.email || 'support@auto-marketing.kr',
+          hostingProvider: footerRow.hosting_provider || 'Google Cloud Platform (GCP)',
+          privacyManager: footerRow.privacy_manager || '김보안 (privacy@auto-marketing.kr)',
+          copyrightText: footerRow.copyright_text || 'Copyright © 2026 Auto-Marketing Corp. All Rights Reserved.',
+          termsOfService: footerRow.terms_of_service || '',
+          privacyPolicy: footerRow.privacy_policy || '',
+          refundPolicy: footerRow.refund_policy || '',
+        }
+      : null;
+
     return NextResponse.json({
       success: true,
       timestamp: new Date().toISOString(),
@@ -84,6 +105,7 @@ export async function GET(req: NextRequest) {
         campaigns,
         references,
         faqs,
+        footer,
       },
     });
   } catch (error: any) {

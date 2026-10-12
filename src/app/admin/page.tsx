@@ -56,6 +56,7 @@ import AdminTaxInvoicesTab from './components/AdminTaxInvoicesTab';
 import AdminFooterTab from './components/AdminFooterTab';
 import AdminFaqsTab from './components/AdminFaqsTab';
 import AdminDepositAgentSection from '@/components/admin/AdminDepositAgentSection';
+import { onUserDataChanged } from '@/lib/egdesk-helpers';
 
 // 15대 관제 탭을 비즈니스 도메인별 5대 핵심 카테고리로 체계화
 const TAB_GROUPS = [
@@ -156,6 +157,13 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetchAdminData();
+
+    // ⚡ [0초 실시간 감시] 이지데스크 공식 DB Watcher(SSE) 연동 (회원, 에셋, 미디어, 입금 등 실시간 대시보드 갱신)
+    const unsub = onUserDataChanged((event) => {
+      fetchAdminData();
+    });
+
+    return () => unsub();
   }, []);
 
   const handleAdjustToken = async (e: React.FormEvent) => {

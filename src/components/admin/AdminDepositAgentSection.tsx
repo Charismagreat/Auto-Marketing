@@ -15,6 +15,7 @@ import {
   ArrowRight,
   FlaskConical,
 } from 'lucide-react';
+import { onUserDataChanged } from '@/lib/egdesk-helpers';
 
 interface DepositRequest {
   id: string;
@@ -85,8 +86,17 @@ export default function AdminDepositAgentSection() {
 
   useEffect(() => {
     fetchDeposits();
-    const interval = setInterval(fetchDeposits, 5000); // 5초 주기 자동 갱신
-    return () => clearInterval(interval);
+
+    // ⚡ [0초 실시간 감시] 이지데스크 공식 DB Watcher(SSE) 연동 (Zero-Polling)
+    const unsub = onUserDataChanged((event) => {
+      if (!event.tableName || event.tableName === 'auto_deposit_requests' || event.tableName === 'auto_sms_logs') {
+        fetchDeposits();
+      }
+    });
+
+    return () => {
+      unsub();
+    };
   }, []);
 
   // 1. 스마트폰 구글 메시지 SMS 즉시 동기화 실행

@@ -23,6 +23,7 @@ import {
   X,
 } from 'lucide-react';
 import Footer from '@/components/Footer';
+import { onUserDataChanged } from '@/lib/egdesk-helpers';
 
 export default function CalendarPage() {
   const [campaigns, setCampaigns] = useState<any[]>([]);
@@ -67,6 +68,15 @@ export default function CalendarPage() {
 
   useEffect(() => {
     fetchCampaigns();
+
+    // ⚡ [0초 실시간 감시] 이지데스크 공식 DB Watcher(SSE) 연동 (캠페인 생성 및 발행 상태 실시간 전환)
+    const unsub = onUserDataChanged((event) => {
+      if (!event.tableName || event.tableName === 'auto_campaigns' || event.tableName === 'auto_dispatch_logs') {
+        fetchCampaigns();
+      }
+    });
+
+    return () => unsub();
   }, []);
 
   // ⚡ AI 7일 주간 골든 마케팅 오토 파일럿 일괄 생성

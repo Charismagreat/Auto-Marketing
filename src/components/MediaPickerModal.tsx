@@ -13,6 +13,7 @@ import {
   FolderOpen,
   HardDrive,
 } from 'lucide-react';
+import { onUserDataChanged } from '@/lib/egdesk-helpers';
 
 interface MediaItem {
   id: string;
@@ -71,6 +72,15 @@ export default function MediaPickerModal({
   useEffect(() => {
     if (isOpen) {
       fetchMedia();
+
+      // ⚡ [0초 실시간 감시] 이지데스크 공식 DB Watcher(SSE) 연동 (미디어 업로드/삭제 시 자동 반영)
+      const unsub = onUserDataChanged((event) => {
+        if (!event.tableName || event.tableName === 'auto_media') {
+          fetchMedia();
+        }
+      }, { tableName: 'auto_media' });
+
+      return () => unsub();
     }
   }, [isOpen]);
 

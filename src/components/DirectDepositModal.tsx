@@ -19,6 +19,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { TOKEN_PACKAGES, PaymentPackage } from '@/lib/token-wallet';
+import { onUserDataChanged } from '@/lib/egdesk-helpers';
 
 interface DirectDepositModalProps {
   isOpen: boolean;
@@ -81,26 +82,39 @@ export default function DirectDepositModal({
     }
   }, [isOpen]);
 
-  // 세션이 발급되었을 때 실시간 상태 폴링 (1.5초 주기)
+  // ⚡ [0초 실시간 감시] 이지데스크 공식 DB Watcher(SSE) 연동 (Zero-Polling)
   useEffect(() => {
     if (sessionData && !isCompleted && isOpen) {
-      pollIntervalRef.current = setInterval(async () => {
+      const checkDeposit = async () => {
         try {
           setPollCount((prev) => prev + 1);
           const res = await fetch(`/api/wallet/direct-deposit?requestId=${sessionData.requestId}`);
           const json = await res.json();
 
           if (json.success && json.isCompleted) {
-            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
             setIsCompleted(true);
             onSuccess(sessionData.tokensToCredit);
           }
         } catch (e) {
-          console.warn('[DirectDepositModal] Polling error:', e);
+          console.warn('[DirectDepositModal] DB Watcher check error:', e);
         }
-      }, 1500);
+      };
+
+      // 1) 즉시 1회 확인
+      checkDeposit();
+
+      // 2) 이지데스크 공식 DB Watcher(SSE) 실시간 구독 (0초 즉각 반응)
+      const unsub = onUserDataChanged((event) => {
+        if (!event.tableName || event.tableName === 'auto_deposit_requests') {
+          checkDeposit();
+        }
+      }, { tableName: 'auto_deposit_requests' });
+
+      // 3) 일시적 네트워크 순단 대비 완충용 15초 저빈도 헬스체크만 유지
+      pollIntervalRef.current = setInterval(checkDeposit, 15000);
 
       return () => {
+        unsub();
         if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
       };
     }

@@ -24,6 +24,7 @@ import {
   Download,
 } from 'lucide-react';
 import Footer from '@/components/Footer';
+import { onUserDataChanged } from '@/lib/egdesk-helpers';
 
 interface Asset {
   id: string;
@@ -66,6 +67,15 @@ export default function AssetLibraryPage() {
 
   useEffect(() => {
     fetchAssets();
+
+    // ⚡ [0초 실시간 감시] 이지데스크 공식 DB Watcher(SSE) 연동 (에셋 생성/삭제 시 자동 반영)
+    const unsub = onUserDataChanged((event) => {
+      if (!event.tableName || event.tableName === 'auto_assets') {
+        fetchAssets();
+      }
+    }, { tableName: 'auto_assets' });
+
+    return () => unsub();
   }, []);
 
   // 에셋 삭제

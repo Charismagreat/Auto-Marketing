@@ -19,6 +19,7 @@ import {
   Edit3,
 } from 'lucide-react';
 import { type Inquiry } from '@/app/api/admin/inquiries/route';
+import { onUserDataChanged } from '@/lib/egdesk-helpers';
 
 export default function AdminInquiriesTab() {
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
@@ -61,6 +62,15 @@ export default function AdminInquiriesTab() {
 
   useEffect(() => {
     fetchInquiries();
+
+    // ⚡ [0초 실시간 감시] 이지데스크 공식 DB Watcher(SSE) 연동 (CS 문의 및 답변 실시간 동기화)
+    const unsub = onUserDataChanged((event) => {
+      if (!event.tableName || event.tableName === 'auto_inquiries' || event.tableName === 'auto_inquiry_replies') {
+        fetchInquiries();
+      }
+    });
+
+    return () => unsub();
   }, [statusFilter, categoryFilter]);
 
   const selectedInquiry = inquiries.find((i) => i.id === selectedId) || inquiries[0];

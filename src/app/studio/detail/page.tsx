@@ -31,6 +31,7 @@ export default function DetailStudioPage() {
   const [viewMode, setViewMode] = useState<'preview' | 'code'>('preview');
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [customImageUrl, setCustomImageUrl] = useState<string | null>(null);
+  const [lastUsage, setLastUsage] = useState<any>(null);
 
   // DB 연동 비즈니스 및 상품 상태
   const [business, setBusiness] = useState<any>(null);
@@ -114,6 +115,9 @@ export default function DetailStudioPage() {
           finalHtml = finalHtml.replace(/src="https:\/\/[^"]+"/g, `src="${overrideImg}"`);
         }
         setHtmlCode(finalHtml);
+        if (data.usage) {
+          setLastUsage(data.usage);
+        }
       }
     } catch (err) {
       console.error('Generate detail error:', err);
@@ -249,12 +253,12 @@ export default function DetailStudioPage() {
                       spec: '860px 모바일 최적화 이커머스 상세페이지 HTML',
                       component_code: htmlCode,
                       preview_url: customImageUrl || products[0]?.image_url || 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80',
-                      costTokens: 2000,
+                      usage: lastUsage,
                     }),
                   });
                   const json = await res.json();
                   if (json.success) {
-                    alert('✨ 상세페이지가 마케팅 라이브러리에 안전하게 저장되었습니다!');
+                    alert(json.message || '✨ 상세페이지가 마케팅 라이브러리에 안전하게 저장되었습니다!');
                   }
                 } catch {
                   alert('저장 중 오류가 발생했습니다.');

@@ -209,7 +209,20 @@ function shouldSkipCanonicalRedirectPath(pathname: string, basePath = ''): boole
   return false;
 }
 
-function computeCanonicalVisitorRedirectTarget(request: NextRequest): string | null {
+function isTunnelPrefixedCodingUrl(pathname: string, basePath = ''): boolean {
+  if (/^\/t\/[^/]+\/p\/[^/]+(\/|$)/.test(pathname)) return true;
+  const stripped = stripBasePathFromPathname(pathname, basePath);
+  if (stripped !== pathname && /^\/t\/[^/]+\/p\/[^/]+(\/|$)/.test(stripped)) return true;
+  return false;
+}
+
+function isTunnelUrlCanonicalRedirectOptIn(request: NextRequest): boolean {
+  const fromHeader = (request.headers.get('x-egdesk-canonical-redirect-tunnel-urls') || '').trim();
+  if (fromHeader === '1' || fromHeader.toLowerCase() === 'true') return true;
+  return runtimeEnv('EGDESK_CANONICAL_REDIRECT_TUNNEL_URLS') === '1';
+}
+
+function resolveCanonicalVisitorRedirect(request: NextRequest): { url: string; status: number } | null {
   if (!isCanonicalRedirectEnabled(request)) return null;
   const canonical = resolveCanonicalVisitorOrigin(request);
   if (!canonical) return null;
@@ -230,12 +243,22 @@ function computeCanonicalVisitorRedirectTarget(request: NextRequest): string | n
   const canonicalHost = normalizeHostname(new URL(canonical).host);
   if (requestHost === canonicalHost) return null;
 
-  const redirectable =
-    isKnownTunnelHostname(requestHost) || isWwwAlternateOfCanonical(requestHost, canonical);
-  if (!redirectable) return null;
+  const wwwAlias = isWwwAlternateOfCanonical(requestHost, canonical);
+  if (wwwAlias) {
+    // www → apex on the same project (custom domain alias).
+  } else if (isKnownTunnelHostname(requestHost)) {
+    if (
+      isTunnelPrefixedCodingUrl(pathname, basePath) &&
+      !isTunnelUrlCanonicalRedirectOptIn(request)
+    ) {
+      return null;
+    }
+  } else {
+    return null;
+  }
 
   let path = stripBasePathFromPathname(pathname, basePath);
-  const target = new URL(
+  const url = new URL(
     (path.startsWith('/') ? path : `/${path}`) + search,
     canonical,
   ).toString();
@@ -246,19 +269,19 @@ function computeCanonicalVisitorRedirectTarget(request: NextRequest): string | n
         (path.startsWith('/') ? path : `/${path}`) + search,
         publicOrigin,
       ).toString();
-      if (current === target) return null;
+      if (current === url) return null;
     } catch {
       // ignore
     }
   }
 
-  return target;
+  return { url, status: wwwAlias ? 308 : 307 };
 }
 
 function maybeRedirectToCanonicalVisitorSite(request: NextRequest): NextResponse | null {
-  const target = computeCanonicalVisitorRedirectTarget(request);
-  if (!target) return null;
-  return NextResponse.redirect(target, 308);
+  const resolved = resolveCanonicalVisitorRedirect(request);
+  if (!resolved) return null;
+  return NextResponse.redirect(resolved.url, resolved.status);
 }
 
 function workspaceForwardHeaders(request: NextRequest): Record<string, string> {

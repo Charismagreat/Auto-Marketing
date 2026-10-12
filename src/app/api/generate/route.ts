@@ -103,6 +103,7 @@ ${isAllMode ? '반드시 퐁신제빵소의 전체 메뉴 라인업의 사진, �
       return NextResponse.json({
         success: true,
         html: cleanHtml,
+        usage: detailRes.usage,
         sections: ['인트로 훅', '장인의 비밀', isAllMode ? '전 메뉴 라인업' : isBundleMode ? '3종 세트 언박싱' : '메뉴 쇼케이스', '리얼 리뷰', '맛있게 먹는 팁', '배송 안내'],
       });
     }
@@ -138,6 +139,7 @@ ${isAllMode ? '반드시 퐁신제빵소의 전체 메뉴 라인업의 사진, �
       return NextResponse.json({
         success: true,
         html: cleanHtml,
+        usage: printRes.usage,
         format: printFormat,
       });
     }
@@ -208,6 +210,7 @@ ${isAllMode ? '오늘 뭐 먹지? 퐁신제빵소 전 메뉴 라인업 랭킹과
       return NextResponse.json({
         success: true,
         script: scriptJson,
+        usage: videoRes.usage,
       });
     }
 
@@ -238,6 +241,7 @@ ${isAllMode ? '퐁신제빵소의 전 메뉴를 직접 다 먹어보고 가격�
       return NextResponse.json({
         success: true,
         content: toText(blogRes),
+        usage: blogRes.usage,
       });
     }
 
@@ -321,6 +325,7 @@ ${isAllMode ? '퐁신제빵소 전 메뉴 라인업을 비교하고 취향별로
       return NextResponse.json({
         success: true,
         cards: cardJson,
+        usage: cardRes.usage,
       });
     }
 
@@ -361,6 +366,7 @@ ${isAllMode ? '배곧 동네 이웃들에게 오늘 아침 갓 구운 전 메뉴
       return NextResponse.json({
         success: true,
         content: cleanContent,
+        usage: karrotRes.usage,
         template,
       });
     }
@@ -402,6 +408,7 @@ ${isAllMode ? '네이버 지도 방문객을 위한 퐁신제빵소 전 메뉴 �
       return NextResponse.json({
         success: true,
         content: cleanContent,
+        usage: placeRes.usage,
         template,
       });
     }

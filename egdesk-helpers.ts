@@ -1,7 +1,7 @@
 /**
  * EGDesk Helper Functions for Next.js
  *
- * Generation version: 2 (EGDesk regenerates when stale)
+ * Generation version: 3 (EGDesk regenerates when stale)
  *
  * Type-safe helpers for EGDesk user data, Google Workspace (Sheets / Drive / Docs / Slides MCP + sync, Gmail, Apps Script),
  * FinanceHub (banks, cards, Hometax, promissory notes),
@@ -26,12 +26,24 @@
 import { EGDESK_CONFIG } from './egdesk.config';
 
 /** @internal Used by EGDesk to detect stale generated helpers. */
-export const EGDESK_HELPERS_GENERATION_VERSION = '2';
+export const EGDESK_HELPERS_GENERATION_VERSION = '3';
 
 /**
  * Resolve EGDesk tunnel basePath for client-side fetch.
  * Next.js basePath does NOT apply to raw fetch() — prepend manually in production.
  */
+function detectEgdeskBasePathFromPathname(pathname: string): string {
+  const parts = pathname.split('/').filter(Boolean);
+  if (parts[0] === 't' && parts.length >= 4 && parts[2] === 'p') {
+    return `/${parts.slice(0, 4).join('/')}`;
+  }
+  return '';
+}
+
+function isLoopbackDevHost(hostname: string): boolean {
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
+}
+
 export function getEgdeskBasePath(): string {
   if (typeof window === 'undefined') {
     return (
@@ -41,16 +53,24 @@ export function getEgdeskBasePath(): string {
     );
   }
 
+  const fromPath = detectEgdeskBasePathFromPathname(window.location.pathname);
+  if (fromPath) return fromPath;
+
   const fromEnv =
     (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_EGDESK_BASE_PATH) || '';
-  if (fromEnv) return fromEnv;
-
-  // Fallback: detect /t/{tunnelId}/p/{projectName} from the current URL
-  const parts = window.location.pathname.split('/').filter(Boolean);
-  if (parts[0] === 't' && parts.length >= 4 && parts[2] === 'p') {
-    return `/${parts.slice(0, 4).join('/')}`;
+  if (fromEnv) {
+    if (isLoopbackDevHost(window.location.hostname)) {
+      return '';
+    }
+    return fromEnv;
   }
   return '';
+}
+
+/** NextAuth SessionProvider basePath (includes /api/auth suffix). */
+export function getNextAuthBasePath(): string {
+  const root = getEgdeskBasePath();
+  return root ? `${root}/api/auth` : '/api/auth';
 }
 
 /**
@@ -653,7 +673,7 @@ function estimateBase64DecodedBytes(data: string): number {
   return Math.floor((trimmed.length * 3) / 4);
 }
 
-function base64ToUint8Array(data: string): Uint8Array {
+function base64ToUint8Array(data: string): Uint8Array<ArrayBuffer> {
   const trimmed = String(data || '').replace(/^data:[^;]+;base64,/i, '').replace(/\s/g, '');
   const bin = atob(trimmed);
   const out = new Uint8Array(bin.length);
@@ -1163,7 +1183,7 @@ export async function uploadVoiceTranscriptAudioFromBase64(
 ): Promise<VoiceTranscriptAudioUploadResult> {
   assertVoiceTranscriptFilename(filename);
   const bytes = base64ToUint8Array(data);
-  const blob = new Blob([bytes], { type: options.mimeType || 'application/octet-stream' });
+  const blob = new Blob([Uint8Array.from(bytes)], { type: options.mimeType || 'application/octet-stream' });
   const file = new File([blob], filename, { type: options.mimeType || blob.type });
   return uploadVoiceTranscriptAudioChunked(file, options);
 }
@@ -1190,7 +1210,7 @@ export async function uploadFile(
   const decodedBytes = estimateBase64DecodedBytes(data);
   if (typeof window !== 'undefined' && decodedBytes > UPLOAD_CHUNKED_THRESHOLD_BYTES) {
     const bytes = base64ToUint8Array(data);
-    const blob = new Blob([bytes], { type: options.mimeType || 'application/octet-stream' });
+    const blob = new Blob([Uint8Array.from(bytes)], { type: options.mimeType || 'application/octet-stream' });
     const file = new File([blob], filename, { type: options.mimeType || blob.type });
     return uploadFileChunked(tableName, rowId, columnName, file, options);
   }
@@ -4055,9 +4075,43 @@ export async function trashDriveFile(fileId: string, preferOAuth?: boolean) {
   return callDriveTool('drive_trash', { fileId, preferOAuth });
 }
 
-/** Find or create the top-level EGDesk Drive folder */
-export async function findOrCreateEgdeskFolder() {
-  return callDriveTool('drive_find_or_create_egdesk_folder', {});
+/**
+ * Find or create the top-level EGDesk Drive folder.
+ * When folderName is set, find or create that folder directly under EGDesk (OAuth).
+ */
+export async function findOrCreateEgdeskFolder(folderName?: string) {
+  const root = await callDriveTool('drive_find_or_create_egdesk_folder', {});
+  if (!folderName?.trim()) {
+    return root;
+  }
+  const name = folderName.trim();
+  const egdeskFolderId =
+    (root && typeof root === 'object' && 'folderId' in root && root.folderId) ||
+    (root && typeof root === 'object' && 'id' in root && root.id) ||
+    '';
+  if (!egdeskFolderId) {
+    throw new Error('findOrCreateEgdeskFolder: EGDesk root folder id missing');
+  }
+  const escapedName = name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  const preferOAuth = true;
+  const listed = await callDriveTool(
+    'drive_list_files',
+    {
+      folderId: String(egdeskFolderId),
+      query: `name = '${escapedName}' and mimeType = 'application/vnd.google-apps.folder'`,
+      preferOAuth,
+    },
+    { preferOAuth },
+  );
+  const files = listed?.files;
+  if (Array.isArray(files) && files.length > 0 && files[0]?.id) {
+    return files[0];
+  }
+  return callDriveTool('drive_create_folder', {
+    name,
+    parentId: String(egdeskFolderId),
+    preferOAuth,
+  });
 }
 
 /** Find or create EGDesk/Dev, Transactions, or Tax Invoices */

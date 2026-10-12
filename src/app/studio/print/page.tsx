@@ -35,6 +35,7 @@ export default function PrintStudioPage() {
   const [copied, setCopied] = useState(false);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [customMediaUrl, setCustomMediaUrl] = useState<string | null>(null);
+  const [lastUsage, setLastUsage] = useState<any>(null);
 
   // DB 연동 상태
   const [business, setBusiness] = useState<any>(null);
@@ -120,6 +121,9 @@ export default function PrintStudioPage() {
           finalHtml = finalHtml.replace(/src="https:\/\/[^"]+"/g, `src="${overrideImg}"`);
         }
         setHtmlCode(finalHtml);
+        if (data.usage) {
+          setLastUsage(data.usage);
+        }
       }
     } catch (err) {
       console.error('Generate print error:', err);
@@ -212,12 +216,16 @@ export default function PrintStudioPage() {
           component_code: htmlCode,
           preview_url: selectedProduct?.image_url || 'https://ldb-phinf.pstatic.net/20250613_51/1749793026669I569w_JPEG/%C6%FE%BD%C5%BD%C9%BA%BC1.jpg',
           status: 'ready',
+          usage: lastUsage,
         }),
       });
       const data = await res.json();
       if (data.success) {
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000);
+        if (data.message) {
+          alert(data.message);
+        }
       }
     } catch (err) {
       console.error('Save asset error:', err);

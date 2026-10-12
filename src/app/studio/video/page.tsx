@@ -42,6 +42,7 @@ export default function VideoStudioPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [customMediaUrl, setCustomMediaUrl] = useState<string | null>(null);
+  const [lastUsage, setLastUsage] = useState<any>(null);
 
   // DB 연동 상태
   const [business, setBusiness] = useState<any>(null);
@@ -116,6 +117,9 @@ export default function VideoStudioPage() {
       if (data.success && data.script) {
         setScriptData(data.script);
         setCurrentSceneIdx(0);
+        if (data.usage) {
+          setLastUsage(data.usage);
+        }
       }
     } catch (err) {
       console.error('Generate video error:', err);
@@ -297,12 +301,16 @@ export default function VideoStudioPage() {
           component_code: JSON.stringify(scriptData, null, 2),
           preview_url: selectedProduct?.image_url || 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&auto=format&fit=crop&q=80',
           status: 'ready',
+          usage: lastUsage,
         }),
       });
       const data = await res.json();
       if (data.success) {
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000);
+        if (data.message) {
+          alert(data.message);
+        }
       }
     } catch (err) {
       console.error('Save asset error:', err);

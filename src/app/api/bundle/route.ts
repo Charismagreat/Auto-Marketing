@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { callAiCaller, insertRows, queryTable, updateRows } from '@/lib/egdesk-helpers';
+import { deductDynamicTokens } from '@/lib/token-margin';
 
 /**
  * 1-Click 마케팅 풀 패키지 일괄 생성 API (Auto Marketing 7-Channel Bundle)
@@ -39,8 +40,9 @@ export async function POST(req: Request) {
     let isBundleMode = productId === 'bundle' || body.mode === 'bundle';
 
     if (!business) {
-      const bizRows = await queryTable('auto_businesses', { limit: 1 });
-      business = (bizRows && bizRows[0]) || {
+      const bizRes = await queryTable('auto_businesses', { limit: 1 }).catch(() => ({ rows: [] }));
+      const bizRows = Array.isArray(bizRes) ? bizRes : (bizRes?.rows || []);
+      business = bizRows[0] || {
         id: 'biz_pongshin_baegot',
         name: '퐁신제빵소',
         category: '베이커리/디저트',
@@ -50,7 +52,8 @@ export async function POST(req: Request) {
     }
 
     // 전체 등록 상품 로드
-    const allProdRows = (await queryTable('auto_products', { limit: 10 })) || [];
+    const prodRes = await queryTable('auto_products', { limit: 10 }).catch(() => ({ rows: [] }));
+    const allProdRows = Array.isArray(prodRes) ? prodRes : (prodRes?.rows || []);
 
     if (isAllMode) {
       // 📋 전체 메뉴 라인업 모드
@@ -79,11 +82,12 @@ export async function POST(req: Request) {
       };
     } else if (!product) {
       if (productId && productId !== 'all' && productId !== 'bundle') {
-        const prodRows = await queryTable('auto_products', {
-          where: `id = '${productId}'`,
+        const pRes = await queryTable('auto_products', {
+          filters: { id: productId },
           limit: 1,
-        });
-        product = (prodRows && prodRows[0]) || null;
+        }).catch(() => ({ rows: [] }));
+        const pRows = Array.isArray(pRes) ? pRes : (pRes?.rows || []);
+        product = pRows[0] || null;
       }
       if (!product) {
         product = allProdRows[0] || {
@@ -289,51 +293,23 @@ ${isAllMode ? '네이버 지도 방문객을 위한 퐁신제빵소 전 메뉴 �
     // 5. auto_assets 일괄 INSERT
     await insertRows('auto_assets', createdAssets);
 
-    // 6. 토큰 차감 (auto_users) 및 감사 로그 (auto_token_logs, ai_token_usage_logs)
-    const costTokens = 5000; // 7대 채널 번들 일괄 생성 비용
+    // 6. AI Caller 실제 사용 토큰에 비례하여 플랫폼 마진율이 적용된 토큰 동적 차감
     const targetUserId = business.user_id || body.userId || 'usr_pongshin_master';
-    try {
-      const uRes = await queryTable('auto_users', { filters: { id: targetUserId }, limit: 1 }).catch(() => ({ rows: [] }));
-      const user = uRes?.rows?.[0];
-      if (user) {
-        const curBal = Number(user.token_balance || 0);
-        const newBal = Math.max(0, curBal - costTokens);
-        await updateRows('auto_users', {
-          token_balance: newBal,
-          updated_at: now,
-        }, {
-          filters: { id: targetUserId },
-        });
+    const allResults = [detailRes, videoRes, printRes, cardRes, blogRes, karrotRes, placeRes];
+    const actualPromptTokens = allResults.reduce((sum, r) => sum + (Number(r?.usage?.promptTokens) || 0), 0);
+    const actualCompletionTokens = allResults.reduce((sum, r) => sum + (Number(r?.usage?.completionTokens) || 0), 0);
+    const actualTotalTokens = allResults.reduce((sum, r) => sum + (Number(r?.usage?.totalTokens) || 0), 0) || (actualPromptTokens + actualCompletionTokens);
 
-        // 토큰 감사 대장 기록
-        await insertRows('auto_token_logs', [{
-          id: `tlog_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-          user_id: targetUserId,
-          user_name: user.name || bizName,
-          type: 'USAGE',
-          amount: -costTokens,
-          balance_after: newBal,
-          reason: `[1-Click 번들] ${isAllMode ? '전 메뉴 라인업' : isBundleMode ? '시그니처 3종 베스트 세트' : prodName} 7대 에셋 일괄 생성`,
-          admin_name: 'AI 오토파일럿 엔진',
-          created_at: now,
-        }]).catch(() => {});
-
-        // AI 소비 로그 대장 기록
-        await insertRows('ai_token_usage_logs', [{
-          id: `ai_log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-          user_id: targetUserId,
-          model: 'gemini-3.8-flash',
-          prompt_tokens: 3500,
-          completion_tokens: 1500,
-          total_tokens: 5000,
-          cost_points: 5000,
-          endpoint: '/api/bundle',
-          created_at: now,
-        }]).catch(() => {});
-      }
-    } catch (tokenErr) {
-      console.warn('Bundle token deduct error:', tokenErr);
-    }
+    const deductResult = await deductDynamicTokens(
+      { id: targetUserId },
+      {
+        promptTokens: actualPromptTokens,
+        completionTokens: actualCompletionTokens,
+        totalTokens: actualTotalTokens,
+      },
+      `[1-Click 번들] ${isAllMode ? '전 메뉴 라인업' : isBundleMode ? '시그니처 3종 베스트 세트' : prodName} 7대 에셋 일괄 생성`,
+      '/api/bundle'
+    );
 
     const elapsedSeconds = ((Date.now() - startTime) / 1000).toFixed(1);
 
@@ -343,6 +319,12 @@ ${isAllMode ? '네이버 지도 방문객을 위한 퐁신제빵소 전 메뉴 �
       business: { id: business.id, name: bizName },
       elapsedSeconds,
       count: createdAssets.length,
+      tokens: {
+        actualUsed: deductResult.actualTokens,
+        marginRate: deductResult.marginRate,
+        billedTokens: deductResult.billedTokens,
+        remainingBalance: deductResult.remainingBalance,
+      },
       assets: createdAssets.map((a) => ({
         id: a.id,
         type: a.type,
@@ -350,7 +332,7 @@ ${isAllMode ? '네이버 지도 방문객을 위한 퐁신제빵소 전 메뉴 �
         spec: a.spec,
       })),
       libraryUrl: '/library',
-      message: `🎉 [${prodName}] 7대 마케팅 에셋이 ${elapsedSeconds}초 만에 일괄 생성되어 에셋 보관함에 안전하게 저장되었습니다!`,
+      message: `🎉 [${prodName}] 7대 마케팅 에셋이 ${elapsedSeconds}초 만에 일괄 생성되었습니다! (실제 AI 소비: ${deductResult.actualTokens.toLocaleString()}T, 마진율 ${deductResult.marginRate}% 적용 ➔ ${deductResult.billedTokens.toLocaleString()}T 차감)`,
     });
   } catch (error: any) {
     console.error('Bundle generate error:', error);

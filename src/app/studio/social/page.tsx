@@ -52,6 +52,7 @@ export default function SocialStudioPage() {
   const [business, setBusiness] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [usageMap, setUsageMap] = useState<Record<string, any>>({});
 
   // 1. DB 데이터 로드
   useEffect(() => {
@@ -132,6 +133,9 @@ export default function SocialStudioPage() {
       const data = await res.json();
       if (data.success && data.content) {
         setPlaceContent(data.content);
+        if (data.usage) {
+          setUsageMap((prev) => ({ ...prev, place: data.usage }));
+        }
       }
     } catch (err) {
       console.error('Generate naver place error:', err);
@@ -177,6 +181,9 @@ export default function SocialStudioPage() {
       const data = await res.json();
       if (data.success && data.content) {
         setKarrotContent(data.content);
+        if (data.usage) {
+          setUsageMap((prev) => ({ ...prev, karrot: data.usage }));
+        }
       }
     } catch (err) {
       console.error('Generate karrot error:', err);
@@ -220,6 +227,9 @@ export default function SocialStudioPage() {
       const data = await res.json();
       if (data.success && data.content) {
         setBlogContent(data.content);
+        if (data.usage) {
+          setUsageMap((prev) => ({ ...prev, blog: data.usage }));
+        }
       }
     } catch (err) {
       console.error('Generate blog error:', err);
@@ -264,6 +274,9 @@ export default function SocialStudioPage() {
       if (data.success && data.cards) {
         setCardData(data.cards);
         setCurrentSlide(0);
+        if (data.usage) {
+          setUsageMap((prev) => ({ ...prev, card: data.usage }));
+        }
       }
     } catch (err) {
       console.error('Generate cards error:', err);
@@ -378,12 +391,16 @@ export default function SocialStudioPage() {
           component_code: content,
           preview_url: selectedProduct?.image_url || 'https://ldb-phinf.pstatic.net/20250613_51/1749793026669I569w_JPEG/%C6%FE%BD%C5%BD%C9%BA%BC1.jpg',
           status: 'ready',
+          usage: usageMap[activeTab] || null,
         }),
       });
       const data = await res.json();
       if (data.success) {
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000);
+        if (data.message) {
+          alert(data.message);
+        }
       }
     } catch (err) {
       console.error('Save asset error:', err);

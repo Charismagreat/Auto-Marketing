@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { queryTable, insertRows, updateRows, deleteRows } from '@/lib/egdesk-helpers';
+import { deductDynamicTokens } from '@/lib/token-margin';
 
 export async function GET(req: Request) {
   try {
@@ -76,43 +77,28 @@ export async function POST(req: Request) {
 
     await insertRows('auto_assets', [assetRow]);
 
-    // 2. auto_users 토큰 차감
-    try {
-      const uRes = await queryTable('auto_users', { filters: { id: userId }, limit: 1 }).catch(() => ({ rows: [] }));
-      const user = uRes.rows?.[0];
-      if (user) {
-        const curBal = Number(user.token_balance || 0);
-        const newBal = Math.max(0, curBal - costTokens);
-        await updateRows('auto_users', {
-          token_balance: newBal,
-          updated_at: now,
-        }, {
-          filters: { id: userId },
-        });
-      }
-    } catch (tokenErr) {
-      console.warn('Token consume error:', tokenErr);
-    }
+    // 2. AI 실제 소비량에 비례하여 플랫폼 마진율이 적용된 토큰 동적 차감
+    const promptTokens = Number(body.usage?.promptTokens) || Math.round((effectiveCode.length || 500) * 0.8);
+    const completionTokens = Number(body.usage?.completionTokens) || Math.round((effectiveCode.length || 500) * 1.2);
+    const totalTokens = Number(body.usage?.totalTokens) || (promptTokens + completionTokens);
 
-    // 3. ai_token_usage_logs 기록
-    try {
-      const logRow = {
-        id: `log_${Date.now()}`,
-        user_id: userId,
-        model_name: type === 'video' ? 'Remotion+TTS' : type === 'detail' ? 'gemini-3.8-flash' : 'gemini-3.1-flash-image',
-        engine_type: type,
-        tokens_used: costTokens,
-      };
-      await insertRows('ai_token_usage_logs', [logRow]);
-    } catch (logErr) {
-      console.warn('Log insert error:', logErr);
-    }
+    const deductRes = await deductDynamicTokens(
+      { id: userId },
+      { promptTokens, completionTokens, totalTokens },
+      `[에셋 생성] ${title || `${type?.toUpperCase()} 에셋`}`,
+      '/api/assets'
+    );
 
     return NextResponse.json({
       success: true,
       assetId,
-      consumedTokens: costTokens,
-      message: '마케팅 에셋이 라이브러리에 안전하게 저장되었으며 토큰이 차감되었습니다.'
+      tokens: {
+        actualUsed: deductRes.actualTokens,
+        marginRate: deductRes.marginRate,
+        billedTokens: deductRes.billedTokens,
+        remainingBalance: deductRes.remainingBalance,
+      },
+      message: `✨ 마케팅 에셋이 보관함에 안전하게 저장되었습니다! (실제 AI 소비: ${deductRes.actualTokens.toLocaleString()}T, 마진율 ${deductRes.marginRate}% 적용 ➔ ${deductRes.billedTokens.toLocaleString()}T 차감)`,
     });
   } catch (error: any) {
     console.error('Save asset error:', error);

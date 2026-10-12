@@ -70,10 +70,15 @@ export async function callAiCaller(
 
   const json = await response.json();
   let innerText = '';
+  let usage = json?.result?.usage || json?.usage || null;
+
   if (json?.result?.content?.[0]?.text) {
     try {
       const parsed = JSON.parse(json.result.content[0].text);
       innerText = parsed.content || parsed.text || json.result.content[0].text;
+      if (parsed.usage) {
+        usage = parsed.usage;
+      }
     } catch {
       innerText = json.result.content[0].text;
     }
@@ -83,10 +88,24 @@ export async function callAiCaller(
     innerText = json.text;
   }
 
+  // fallback: 토큰 usage가 없는 경우 텍스트 기반 정밀 추정 (영문 4자당 1토큰, 한글 1자당 1.5토큰)
+  if (!usage || !usage.totalTokens) {
+    const promptLen = (typeof args?.prompt === 'string' ? args.prompt.length : 100);
+    const completionLen = innerText.length;
+    const estPromptTokens = Math.round(promptLen * 1.2);
+    const estCompletionTokens = Math.round(completionLen * 1.5);
+    usage = {
+      promptTokens: estPromptTokens,
+      completionTokens: estCompletionTokens,
+      totalTokens: estPromptTokens + estCompletionTokens,
+      isEstimated: true,
+    };
+  }
+
   return {
     text: innerText,
     content: innerText,
-    usage: json?.result?.usage,
+    usage,
     raw: json,
     toString: () => innerText,
     replace: (search: any, replaceValue: any) => innerText.replace(search, replaceValue),

@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { setupDatabase, queryTable, insertRows } from '@/lib/setup-db';
+import { executeSQL } from '@/lib/egdesk-helpers';
 
 export interface Inquiry {
   id: string;
@@ -24,84 +26,51 @@ export interface Inquiry {
   internalNote?: string;
 }
 
-let mockInquiries: Inquiry[] = [
-  {
-    id: 'inq-101',
-    storeId: 'store-1',
-    storeName: '배곧 달콤베이커리',
-    authorName: '김점주 사장님',
-    contact: '010-9876-5432',
-    category: 'CHANNEL_CONNECT',
-    categoryLabel: '채널 연동',
-    title: '네이버 스마트플레이스 새소식 연동 시 권한 오류가 발생합니다.',
-    content: '플레이스 새소식 발행을 시도했는데 "인증 토큰 유효기간 만료" 오류가 뜹니다. 어떻게 재연동해야 하나요?',
-    status: 'PENDING',
-    priority: 'HIGH',
-    sentiment: 'NEGATIVE',
-    createdAt: '2026-10-12 16:10:00',
-    replies: [],
-    internalNote: '네이버 플레이스 파트너센터 권한 만료 건. 재인증 링크 안내 필요.',
-  },
-  {
-    id: 'inq-102',
-    storeId: 'store-2',
-    storeName: '정왕동 불타는 쭈꾸미',
-    authorName: '박대표 사장님',
-    contact: '010-1234-5678',
-    category: 'QUALITY',
-    categoryLabel: '생성 품질',
-    title: '인스타 숏폼 대본 생성 시 매운맛 단계를 더 강조하고 싶어요.',
-    content: '기본 15초 숏폼 릴스 대본이 너무 얌전하게 나옵니다. "눈물 쏙 빠지는 3단계 매운맛"을 비주얼 훅으로 넣고 싶은데 프롬프트 조정이 가능한가요?',
-    status: 'IN_PROGRESS',
-    priority: 'NORMAL',
-    sentiment: 'NEUTRAL',
-    createdAt: '2026-10-12 15:00:20',
-    replies: [
-      {
-        id: 'rep-1',
-        author: '운영자 AI 어시스턴트',
-        content: '사장님 안녕하세요! 릴스 바이럴 훅에 매운맛 단계를 극대화할 수 있도록 관리자 프롬프트 스튜디오에서 숏폼 대본 훅 강도를 튜닝해 두었습니다. 지금 바로 테스트해 보세요!',
-        createdAt: '2026-10-12 15:20:00',
-        isAiDraft: false,
-      },
-    ],
-    internalNote: '프롬프트 튜닝 스튜디오에서 숏폼 Temperature 0.8로 상향 완료.',
-  },
-  {
-    id: 'inq-103',
-    storeId: 'store-3',
-    storeName: '배곧 피트니스 24',
-    authorName: '최관장 님',
-    contact: '010-5555-7777',
-    category: 'BILLING',
-    categoryLabel: '요금 및 토큰',
-    title: '오토파일럿 프로 팩 세금계산서 발행 요청드립니다.',
-    content: '이번 달 정기 구독료 790,000원에 대한 전자세금계산서 발행 부탁드립니다. 사업자등록증 첨부했습니다.',
-    status: 'RESOLVED',
-    priority: 'NORMAL',
-    sentiment: 'POSITIVE',
-    createdAt: '2026-10-12 11:30:00',
-    replies: [
-      {
-        id: 'rep-2',
-        author: '정산팀 관리자',
-        content: '안녕하세요 관장님! 국세청 홈택스를 통해 전자세금계산서 발행 완료되었습니다. 이메일(fit24@gym.com)을 확인해 주시기 바랍니다.',
-        createdAt: '2026-10-12 11:45:00',
-        isAiDraft: false,
-      },
-    ],
-    internalNote: '홈택스 역발행 및 이메일 발송 완료.',
-  },
-];
-
 export async function GET(req: Request) {
   try {
+    await setupDatabase();
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status');
     const category = searchParams.get('category');
     const search = searchParams.get('search')?.toLowerCase();
 
-    let filtered = [...mockInquiries];
+    const [inqRes, repRes] = await Promise.all([
+      queryTable('auto_inquiries', { limit: 100, orderBy: 'created_at', orderDirection: 'DESC' }).catch(() => ({ rows: [] })),
+      queryTable('auto_inquiry_replies', { limit: 500, orderBy: 'created_at', orderDirection: 'ASC' }).catch(() => ({ rows: [] })),
+    ]);
+
+    const repliesByInq: Record<string, any[]> = {};
+    for (const r of repRes.rows || []) {
+      const inqId = r.inquiry_id;
+      if (!repliesByInq[inqId]) repliesByInq[inqId] = [];
+      repliesByInq[inqId].push({
+        id: r.id,
+        author: r.author || '관리자',
+        content: r.content || '',
+        createdAt: r.created_at || '',
+        isAiDraft: Boolean(r.is_ai_draft),
+      });
+    }
+
+    let allInquiries: Inquiry[] = (inqRes.rows || []).map((r: any) => ({
+      id: r.id,
+      storeId: r.store_id || '',
+      storeName: r.store_name || '',
+      authorName: r.author_name || '',
+      contact: r.contact || '',
+      category: (r.category || 'CHANNEL_CONNECT') as any,
+      categoryLabel: r.category_label || '채널 연동',
+      title: r.title || '',
+      content: r.content || '',
+      status: (r.status || 'PENDING') as any,
+      priority: (r.priority || 'NORMAL') as any,
+      sentiment: (r.sentiment || 'NEUTRAL') as any,
+      createdAt: r.created_at || '',
+      replies: repliesByInq[r.id] || [],
+      internalNote: r.internal_note || '',
+    }));
+
+    let filtered = [...allInquiries];
 
     if (status && status !== 'ALL') {
       filtered = filtered.filter((i) => i.status === status);
@@ -119,10 +88,10 @@ export async function GET(req: Request) {
     }
 
     const stats = {
-      total: mockInquiries.length,
-      pending: mockInquiries.filter((i) => i.status === 'PENDING').length,
-      inProgress: mockInquiries.filter((i) => i.status === 'IN_PROGRESS').length,
-      resolved: mockInquiries.filter((i) => i.status === 'RESOLVED').length,
+      total: allInquiries.length,
+      pending: allInquiries.filter((i) => i.status === 'PENDING').length,
+      inProgress: allInquiries.filter((i) => i.status === 'IN_PROGRESS').length,
+      resolved: allInquiries.filter((i) => i.status === 'RESOLVED').length,
     };
 
     return NextResponse.json({
@@ -140,26 +109,27 @@ export async function GET(req: Request) {
   }
 }
 
-// 답변 등록, 상태 변경, AI 답변 초안 생성
+// 답변 등록, 상태 변경, AI 답변 초안 생성 (SQLite DB 영구 반영)
 export async function POST(req: Request) {
   try {
+    await setupDatabase();
     const body = await req.json();
     const { action, inquiryId, replyContent, newStatus, internalNote } = body;
 
-    const inqIndex = mockInquiries.findIndex((i) => i.id === inquiryId);
-    if (inqIndex === -1 && action !== 'ai_draft') {
-      return NextResponse.json({ success: false, error: '해당 문의를 찾을 수 없습니다.' }, { status: 404 });
-    }
-
     // 1. AI 자동 답변 초안 생성 액션
     if (action === 'ai_draft') {
-      const inquiry = mockInquiries.find((i) => i.id === inquiryId) || {
-        storeName: body.storeName || '사장님',
+      const inqRes = await queryTable('auto_inquiries', { limit: 100 }).catch(() => ({ rows: [] }));
+      const inquiry = (inqRes.rows || []).find((i: any) => i.id === inquiryId) || {
+        store_name: body.storeName || '사장님',
         title: body.title || '',
         content: body.content || '',
       };
 
-      const aiDraft = `안녕하세요 ${inquiry.storeName} 사장님! 오토마케팅 고객 성공팀입니다.\n\n문의해 주신 "${inquiry.title}" 건과 관련하여 안내해 드립니다.\n${inquiry.content.includes('인증') || inquiry.content.includes('토큰') ? '네이버 스마트플레이스 연동 보안 정책에 따라 90일 주기로 파트너 재인증이 필요합니다. 관리자 화면 상단의 [채널 연동 관리]에서 1-Click 재인증을 진행해 주시면 즉시 정상 가동됩니다.' : '요청해 주신 내용을 반영하여 맞춤형 최적화를 즉시 적용해 드렸습니다.'}\n\n추가로 궁금하신 사항이 있으시면 언제든 말씀해 주세요. 사장님의 골목상권 1등 매장 성장을 항상 응원합니다! 감사합니다.`;
+      const storeName = inquiry.store_name || inquiry.storeName || '사장님';
+      const title = inquiry.title || '';
+      const content = inquiry.content || '';
+
+      const aiDraft = `안녕하세요 ${storeName} 사장님! 오토마케팅 고객 성공팀입니다.\n\n문의해 주신 "${title}" 건과 관련하여 안내해 드립니다.\n${content.includes('인증') || content.includes('토큰') ? '네이버 스마트플레이스 연동 보안 정책에 따라 90일 주기로 파트너 재인증이 필요합니다. 관리자 화면 상단의 [채널 연동 관리]에서 1-Click 재인증을 진행해 주시면 즉시 정상 가동됩니다.' : '요청해 주신 내용을 반영하여 맞춤형 최적화를 즉시 적용해 드렸습니다.'}\n\n추가로 궁금하신 사항이 있으시면 언제든 말씀해 주세요. 사장님의 골목상권 1등 매장 성장을 항상 응원합니다! 감사합니다.`;
 
       return NextResponse.json({
         success: true,
@@ -168,32 +138,48 @@ export async function POST(req: Request) {
     }
 
     // 2. 답변 등록
-    if (action === 'reply' && replyContent) {
-      mockInquiries[inqIndex].replies.push({
-        id: `rep-${Date.now()}`,
-        author: 'Auto-Marketing 슈퍼관리자',
-        content: replyContent,
-        createdAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
-      });
-      mockInquiries[inqIndex].status = newStatus || 'RESOLVED';
-      if (internalNote !== undefined) mockInquiries[inqIndex].internalNote = internalNote;
+    if (action === 'reply' && replyContent && inquiryId) {
+      const repId = `rep-${Date.now()}`;
+      const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
+
+      await insertRows('auto_inquiry_replies', [
+        {
+          id: repId,
+          inquiry_id: inquiryId,
+          author: 'Auto-Marketing 슈퍼관리자',
+          content: replyContent,
+          is_ai_draft: 0,
+          created_at: now,
+        },
+      ]);
+
+      const updatedStatus = newStatus || 'RESOLVED';
+      const safeNote = (internalNote !== undefined ? internalNote : '').replace(/'/g, "''");
+      const noteSql = internalNote !== undefined ? `, internal_note = '${safeNote}'` : '';
+
+      await executeSQL(
+        `UPDATE auto_inquiries SET status = '${updatedStatus}'${noteSql} WHERE id = '${inquiryId}';`
+      );
 
       return NextResponse.json({
         success: true,
-        message: '답변이 성공적으로 등록되었습니다.',
-        inquiry: mockInquiries[inqIndex],
+        message: '답변이 SQLite DB에 성공적으로 등록되었습니다.',
       });
     }
 
     // 3. 상태 또는 내부 메모 변경
-    if (action === 'update_status') {
-      if (newStatus) mockInquiries[inqIndex].status = newStatus;
-      if (internalNote !== undefined) mockInquiries[inqIndex].internalNote = internalNote;
+    if (action === 'update_status' && inquiryId) {
+      const sets: string[] = [];
+      if (newStatus) sets.push(`status = '${newStatus}'`);
+      if (internalNote !== undefined) sets.push(`internal_note = '${internalNote.replace(/'/g, "''")}'`);
+
+      if (sets.length > 0) {
+        await executeSQL(`UPDATE auto_inquiries SET ${sets.join(', ')} WHERE id = '${inquiryId}';`);
+      }
 
       return NextResponse.json({
         success: true,
-        message: '문의 상태가 업데이트되었습니다.',
-        inquiry: mockInquiries[inqIndex],
+        message: '문의 상태가 DB에 성공적으로 업데이트되었습니다.',
       });
     }
 

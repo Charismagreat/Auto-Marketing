@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { setupDatabase, queryTable } from '@/lib/setup-db';
+import { executeSQL } from '@/lib/egdesk-helpers';
 
 export interface TaxInvoice {
   id: string;
@@ -16,69 +18,42 @@ export interface TaxInvoice {
   issueDate: string;
 }
 
-let mockTaxInvoices: TaxInvoice[] = [
-  {
-    id: 'tax-001',
-    invoiceNumber: '20261012-AM-001',
-    ntsApprovalNumber: '20261012-41000284-88912345',
-    storeName: '배곧 피트니스 24',
-    bizNumber: '134-87-99123',
-    ceoName: '최관장',
-    email: 'fit24@gym.com',
-    itemDescription: '오토파일럿 프로 팩 1개월 정기 구독료',
-    supplyAmount: 71818,
-    vatAmount: 7182,
-    totalAmount: 79000,
-    status: 'APPROVED',
-    issueDate: '2026-10-12',
-  },
-  {
-    id: 'tax-002',
-    invoiceNumber: '20261012-AM-002',
-    storeName: '배곧 달콤베이커리',
-    bizNumber: '214-12-65432',
-    ceoName: '김점주',
-    email: 'sweetbakery@naver.com',
-    itemDescription: '골목대장 올인원 마스터 연간 라이선스 선납',
-    supplyAmount: 1354545,
-    vatAmount: 135455,
-    totalAmount: 1490000,
-    status: 'PENDING',
-    issueDate: '2026-10-12',
-  },
-  {
-    id: 'tax-003',
-    invoiceNumber: '20261010-AM-003',
-    ntsApprovalNumber: '20261010-41000284-77610012',
-    storeName: '정왕동 불타는 쭈꾸미',
-    bizNumber: '110-23-45678',
-    ceoName: '박대표',
-    email: 'hotjjukku@daum.net',
-    itemDescription: '15초 숏폼 릴스 4편 제작 대행',
-    supplyAmount: 320000,
-    vatAmount: 32000,
-    totalAmount: 352000,
-    status: 'APPROVED',
-    issueDate: '2026-10-10',
-  },
-];
-
 export async function GET() {
   try {
-    const totalSales = mockTaxInvoices
+    await setupDatabase();
+    const res = await queryTable('auto_tax_invoices', { limit: 100, orderBy: 'created_at', orderDirection: 'DESC' }).catch(() => ({ rows: [] }));
+    const rows = res.rows || [];
+
+    const invoices: TaxInvoice[] = rows.map((r: any) => ({
+      id: r.id,
+      invoiceNumber: r.invoice_number || '',
+      ntsApprovalNumber: r.nts_approval_number || undefined,
+      storeName: r.store_name || '',
+      bizNumber: r.biz_number || '',
+      ceoName: r.ceo_name || '',
+      email: r.email || '',
+      itemDescription: r.item_description || '',
+      supplyAmount: Number(r.supply_amount) || 0,
+      vatAmount: Number(r.vat_amount) || 0,
+      totalAmount: Number(r.total_amount) || 0,
+      status: (r.status || 'PENDING') as any,
+      issueDate: r.issue_date || '',
+    }));
+
+    const totalSales = invoices
       .filter((i) => i.status === 'APPROVED')
       .reduce((acc, cur) => acc + cur.totalAmount, 0);
 
-    const pendingCount = mockTaxInvoices.filter((i) => i.status === 'PENDING').length;
+    const pendingCount = invoices.filter((i) => i.status === 'PENDING').length;
 
     return NextResponse.json({
       success: true,
       data: {
-        invoices: mockTaxInvoices,
+        invoices,
         stats: {
           totalSales,
           pendingCount,
-          totalCount: mockTaxInvoices.length,
+          totalCount: invoices.length,
         },
       },
     });
@@ -90,24 +65,27 @@ export async function GET() {
   }
 }
 
-// 국세청 전송 승인 또는 상태 변경
+// 국세청 전송 승인 또는 상태 변경 (SQLite DB 영구 반영)
 export async function POST(req: Request) {
   try {
+    await setupDatabase();
     const body = await req.json();
     const { action, invoiceId } = body;
 
-    const target = mockTaxInvoices.find((i) => i.id === invoiceId);
-    if (!target) {
-      return NextResponse.json({ success: false, error: '해당 계산서를 찾을 수 없습니다.' }, { status: 404 });
+    if (!invoiceId) {
+      return NextResponse.json({ success: false, error: 'invoiceId 누락' }, { status: 400 });
     }
 
     if (action === 'approve') {
-      target.status = 'APPROVED';
-      target.ntsApprovalNumber = `20261012-41000284-${Math.floor(10000000 + Math.random() * 90000000)}`;
+      const ntsApprovalNumber = `20261012-41000284-${Math.floor(10000000 + Math.random() * 90000000)}`;
+      await executeSQL(
+        `UPDATE auto_tax_invoices SET status = 'APPROVED', nts_approval_number = '${ntsApprovalNumber}' WHERE id = '${invoiceId}';`
+      );
+
       return NextResponse.json({
         success: true,
-        message: '국세청 홈택스 전자세금계산서 발행 및 전송이 완료되었습니다.',
-        invoice: target,
+        message: '국세청 홈택스 전자세금계산서 발행 및 DB 승인이 완료되었습니다.',
+        ntsApprovalNumber,
       });
     }
 

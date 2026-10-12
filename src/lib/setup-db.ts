@@ -58,12 +58,16 @@ export async function safeCreateTable(displayName: string, columns: any[], optio
       console.log(`[Auto-Marketing] ✅ Created table: "${tableName}"`);
     } catch (createErr: any) {
       console.warn(`[Auto-Marketing] Table create warning "${tableName}":`, createErr.message);
+      try {
+        const colDefs = sanitizedColumns.map((c: any) => `"${c.name}" ${c.type || 'TEXT'}`).join(', ');
+        await executeSQL(`CREATE TABLE IF NOT EXISTS "${tableName}" (${colDefs});`);
+      } catch {}
     }
   }
 }
 
 /**
- * 퐁신제빵소 테스트 소상공인 및 기본 데이터 시드 주입
+ * 기본 시드 데이터 주입 (퐁신제빵소 소상공인 및 관리자 관제 초기 데이터)
  */
 async function seedInitialData() {
   const now = new Date().toISOString();
@@ -83,7 +87,6 @@ async function seedInitialData() {
       }
     ]).catch(console.error);
   } else {
-    // 기존 유저가 존재하면 이메일을 guest@automarketing.com으로 동기화
     await executeSQL(`UPDATE auto_users SET email = 'guest@automarketing.com' WHERE id = 'usr_pongshin_master' OR email = 'pongshin.bakery@gmail.com'`).catch(() => {});
   }
 
@@ -150,49 +153,44 @@ async function seedInitialData() {
     await insertRows('auto_faqs', [
       {
         id: 'faq_1',
-        category: '이용방법',
-        question: '오토마케팅은 어떻게 시작하나요?',
-        answer: '구글 계정으로 1초 만에 로그인한 뒤, 사업자등록증 사진이나 매장 소개 한 줄을 입력하시면 AI가 30초 만에 브랜드 아이덴티티와 첫 마케팅 콘텐츠를 자동으로 기획합니다.',
+        category: 'CONNECT',
+        category_label: '채널 연동',
+        question: '당근마켓 비즈프로필 연동 시 개인 계정으로도 가능한가요?',
+        answer: '당근마켓 마케팅 자동 발행은 당근 비즈프로필(전문 판매자 계정)과 연동됩니다. 개인 계정이시라면 당근 앱 내에서 무료로 1분 만에 비즈프로필로 전환하신 후 연동하실 수 있습니다.',
         sort_order: 1,
         is_published: 1,
         created_at: now,
       },
       {
         id: 'faq_2',
-        category: '영상/이미지',
-        question: 'AI가 만든 영상이나 카드뉴스의 글자/가격을 고칠 수 있나요?',
-        answer: '네, 100% 가능합니다! 오토마케팅은 비디오와 이미지를 전부 코드로 렌더링하기 때문에, 채팅창에 "글자 색상 바꿔줘", "가격 11,000원으로 고쳐줘"라고 말씀하시면 0초 만에 실시간으로 수정됩니다.',
+        category: 'CONNECT',
+        category_label: '채널 연동',
+        question: '네이버 스마트플레이스 새소식 쿠폰은 어떻게 자동 연동되나요?',
+        answer: '네이버 스마트플레이스 파트너센터 API 권한을 1회 승인해 주시면, 오토마케팅 엔진이 생성한 이벤트 소식글과 함께 [알림받기 전용 웰컴 쿠폰]이 플레이스 매장에 즉시 등록됩니다.',
         sort_order: 2,
         is_published: 1,
         created_at: now,
       },
       {
         id: 'faq_3',
-        category: '소셜발행',
-        question: '인스타그램과 블로그에 자동 발행되기 전에 미리 검수할 수 있나요?',
-        answer: '네! 완전 자동 발행 모드 외에도 사장님이 스마트폰에서 확인 후 [승인] 버튼을 눌러야만 배포되는 "안심 승인 큐"가 기본 지원됩니다.',
+        category: 'BILLING',
+        category_label: '결제/토큰',
+        question: '남은 마케팅 토큰은 다음 달로 이월되나요?',
+        answer: '네, 정기 구독 회원의 경우 사용하지 않고 남은 토큰은 다음 달로 자동 이월되어 소멸되지 않습니다.',
         sort_order: 3,
         is_published: 1,
         created_at: now,
       },
       {
         id: 'faq_4',
-        category: '인쇄/상세페이지',
-        question: '스마트스토어 상세페이지나 매장 X-배너 인쇄 파일도 나오나요?',
-        answer: '네, 스마트스토어/쿠팡 규격에 맞춘 860px 고화질 분할 이미지팩과, 인쇄소(오프린트미, 비즈하우스 등)에 바로 접수 가능한 300 DPI 인쇄 전용 PDF가 원클릭으로 출력됩니다.',
+        category: 'PRINT',
+        category_label: '인쇄/배송',
+        question: '생성된 A4 전단지는 어떻게 인쇄하나요?',
+        answer: '에셋 보관함에서 [인쇄용 고해상도 PDF 다운로드] 버튼을 누르시면 300DPI 인쇄소 규격 CMYK 파일이 다운로드됩니다. 가까운 인쇄소에 바로 맡기시거나 매장 프린터로 즉시 출력하실 수 있습니다.',
         sort_order: 4,
         is_published: 1,
         created_at: now,
       },
-      {
-        id: 'faq_5',
-        category: '과금/토큰',
-        question: '토큰은 어떻게 차감되나요?',
-        answer: '가입 즉시 50,000 웰컴 토큰이 무료 지급되어 마케팅 콘텐츠를 마음껏 체험해 보실 수 있습니다. 이후 이미지 생성(약 1,000T), 영상 생성(약 3,000T) 등 사용한 만큼만 투명하게 차감됩니다.',
-        sort_order: 5,
-        is_published: 1,
-        created_at: now,
-      }
     ]).catch(console.error);
   }
 
@@ -241,99 +239,389 @@ async function seedInitialData() {
         status: 'draft',
         asset_id: '',
         created_at: now,
-      },
-      {
-        id: 'camp_4',
-        business_id: 'biz_pongshin_baegot',
-        title: '카스테라 냉동실에 얼려 먹으면 생기는 놀라운 일',
-        platform: 'card',
-        channel_type: '1:1 카드뉴스',
-        theme: '인스타그램 6컷 카드뉴스 정보성 콘텐츠',
-        scheduled_at: '2026-10-15',
-        time_slot: '오후 08:30 (저녁 릴렉스 시간대)',
-        tip: '저장수(Save)를 극대화하여 인스타 탐색 탭 노출을 노립니다.',
-        status: 'scheduled',
-        asset_id: '',
-        created_at: now,
-      },
-      {
-        id: 'camp_5',
-        business_id: 'biz_pongshin_baegot',
-        title: '주말 홈카페 선물세트 3종 한정 수량 오픈',
-        platform: 'store',
-        channel_type: '스마트스토어 860px',
-        theme: '스마트스토어 주말 택배 발송 & 상세페이지 점검',
-        scheduled_at: '2026-10-16',
-        time_slot: '오전 10:00 (당일 발송 마감 전)',
-        tip: '특수 에어팩 안심 배송 이미지를 강조하여 선물 구매율을 높입니다.',
-        status: 'scheduled',
-        asset_id: '',
-        created_at: now,
-      },
-      {
-        id: 'camp_6',
-        business_id: 'biz_pongshin_baegot',
-        title: '피크닉 갈 때 퐁신 카스테라 테이크아웃! 아메리카노 1,000원',
-        platform: 'print',
-        channel_type: '매장 앞 X배너',
-        theme: '배곧 생명공원 피크닉 방문객 현장 이벤트',
-        scheduled_at: '2026-10-17',
-        time_slot: '오전 11:00',
-        tip: '주말 가족 나들이 손님의 워크인(Walk-in) 방문을 유도합니다.',
-        status: 'ready',
-        asset_id: '',
-        created_at: now,
       }
     ]).catch(console.error);
   }
 
-  // 6. 매장 실물 미디어 스토리지 시드 (auto_media)
-  const mediaCheck = await queryTable('auto_media', { limit: 1 }).catch(() => ({ rows: [] }));
-  if (!mediaCheck.rows || mediaCheck.rows.length === 0) {
-    await insertRows('auto_media', [
+  // 6. SaaS 요금제 시드 (auto_pricing_plans)
+  const planCheck = await queryTable('auto_pricing_plans', { limit: 1 }).catch(() => ({ rows: [] }));
+  if (!planCheck.rows || planCheck.rows.length === 0) {
+    await insertRows('auto_pricing_plans', [
       {
-        id: 'med_pongshin_original',
-        business_id: 'biz_pongshin_baegot',
-        name: '퐁신 오리지널 카스테라 갓 구운 실물 컷.jpg',
-        type: 'image',
-        mime_type: 'image/jpeg',
-        url: 'https://ldb-phinf.pstatic.net/20250613_51/1749793026669I569w_JPEG/%C6%FE%BD%C5%BD%C9%BA%BC1.jpg',
-        size_bytes: 425000,
+        id: 'plan-starter',
+        name: '스타터 로컬 팩 (Starter)',
+        monthly_price: 39000,
+        token_quota: 50000,
+        estimated_bundles: 15,
+        estimated_cost: 2650,
+        margin_rate: 93.2,
         created_at: now,
       },
       {
-        id: 'med_pongshin_cream',
-        business_id: 'biz_pongshin_baegot',
-        name: '생크림 폭탄 카스테라 단면 클로즈업.jpg',
-        type: 'image',
-        mime_type: 'image/jpeg',
-        url: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&auto=format&fit=crop&q=80',
-        size_bytes: 580000,
+        id: 'plan-autopilot',
+        name: '오토파일럿 프로 팩 (Pro)',
+        monthly_price: 79000,
+        token_quota: 150000,
+        estimated_bundles: 45,
+        estimated_cost: 7950,
+        margin_rate: 89.9,
         created_at: now,
       },
       {
-        id: 'med_pongshin_cheese',
-        business_id: 'biz_pongshin_baegot',
-        name: '단짠 체다치즈 흘러내리는 순간.jpg',
-        type: 'image',
-        mime_type: 'image/jpeg',
-        url: 'https://images.unsplash.com/photo-1586985289688-ca3cf47d3e6e?w=800&auto=format&fit=crop&q=80',
-        size_bytes: 512000,
+        id: 'plan-master',
+        name: '골목대장 올인원 마스터 (Master)',
+        monthly_price: 149000,
+        token_quota: 400000,
+        estimated_bundles: 120,
+        estimated_cost: 21200,
+        margin_rate: 85.8,
         created_at: now,
+      },
+    ]).catch(console.error);
+  }
+
+  // 7. AI 모델 원가 시드 (auto_model_costs)
+  const costCheck = await queryTable('auto_model_costs', { limit: 1 }).catch(() => ({ rows: [] }));
+  if (!costCheck.rows || costCheck.rows.length === 0) {
+    await insertRows('auto_model_costs', [
+      { id: 'gemini-flash', name: 'Gemini 2.5 Flash', provider: 'Google Cloud', type: 'TEXT', unit_cost: 3.5, typical_calls: 7, created_at: now },
+      { id: 'flux-image', name: 'Flux 1.1 Pro (고화질)', provider: 'Black Forest Labs', type: 'IMAGE', unit_cost: 42.0, typical_calls: 3, created_at: now },
+      { id: 'tts-voice', name: 'Google Cloud TTS Neural2', provider: 'Google Cloud', type: 'AUDIO', unit_cost: 12.0, typical_calls: 1, created_at: now },
+      { id: 'video-render', name: 'Capacitor 숏폼 합성 렌더러', provider: 'Auto-Marketing Local', type: 'VIDEO', unit_cost: 15.0, typical_calls: 1, created_at: now },
+    ]).catch(console.error);
+  }
+
+  // 8. 전자세금계산서 시드 (auto_tax_invoices)
+  const taxCheck = await queryTable('auto_tax_invoices', { limit: 1 }).catch(() => ({ rows: [] }));
+  if (!taxCheck.rows || taxCheck.rows.length === 0) {
+    await insertRows('auto_tax_invoices', [
+      {
+        id: 'tax-001',
+        invoice_number: '20261012-AM-001',
+        nts_approval_number: '20261012-41000284-88912345',
+        store_name: '배곧 피트니스 24',
+        biz_number: '134-87-99123',
+        ceo_name: '최관장',
+        email: 'fit24@gym.com',
+        item_description: '오토파일럿 프로 팩 1개월 정기 구독료',
+        supply_amount: 71818,
+        vat_amount: 7182,
+        total_amount: 79000,
+        status: 'APPROVED',
+        issue_date: '2026-10-12',
+        created_at: now,
+      },
+      {
+        id: 'tax-002',
+        invoice_number: '20261012-AM-002',
+        nts_approval_number: '',
+        store_name: '배곧 달콤베이커리',
+        biz_number: '214-12-65432',
+        ceo_name: '김점주',
+        email: 'sweetbakery@naver.com',
+        item_description: '골목대장 올인원 마스터 연간 라이선스 선납',
+        supply_amount: 1354545,
+        vat_amount: 135455,
+        total_amount: 1490000,
+        status: 'PENDING',
+        issue_date: '2026-10-12',
+        created_at: now,
+      },
+      {
+        id: 'tax-003',
+        invoice_number: '20261010-AM-003',
+        nts_approval_number: '20261010-41000284-77610012',
+        store_name: '정왕동 불타는 쭈꾸미',
+        biz_number: '110-23-45678',
+        ceo_name: '박대표',
+        email: 'hotjjukku@daum.net',
+        item_description: '15초 숏폼 릴스 4편 제작 대행',
+        supply_amount: 320000,
+        vat_amount: 32000,
+        total_amount: 352000,
+        status: 'APPROVED',
+        issue_date: '2026-10-10',
+        created_at: now,
+      },
+    ]).catch(console.error);
+  }
+
+  // 9. 외부 채널 디스패치 로그 시드 (auto_dispatch_logs)
+  const dispCheck = await queryTable('auto_dispatch_logs', { limit: 1 }).catch(() => ({ rows: [] }));
+  if (!dispCheck.rows || dispCheck.rows.length === 0) {
+    await insertRows('auto_dispatch_logs', [
+      {
+        id: 'disp-001',
+        channel: 'karrot',
+        store_id: 'store-1',
+        store_name: '배곧 달콤베이커리',
+        title: '갓 구운 소금빵 1+1 이웃 단골 쿠폰 발행',
+        status: 'SUCCESS',
+        status_code: 200,
+        latency_ms: 342,
+        payload_summary: '당근 비즈프로필 소식글 게시 (단골 1,000원 쿠폰 포함, 이미지 2장 첨부)',
+        error_message: '',
+        retry_count: 0,
+        external_url: 'https://town.daangn.com/biz/sweet-bakery-1',
+        created_at: '2026-10-12 16:45:12',
+      },
+      {
+        id: 'disp-002',
+        channel: 'naver_place',
+        store_id: 'store-1',
+        store_name: '배곧 달콤베이커리',
+        title: '[배곧 맛집] 네이버 스마트플레이스 알림받기 쿠폰 이벤트',
+        status: 'SUCCESS',
+        status_code: 201,
+        latency_ms: 512,
+        payload_summary: '스마트플레이스 새소식 등록 (알림받기 시 소금빵 1개 증정 쿠폰 연동)',
+        error_message: '',
+        retry_count: 0,
+        external_url: 'https://m.place.naver.com/restaurant/12345678/feed',
+        created_at: '2026-10-12 15:30:00',
+      },
+      {
+        id: 'disp-003',
+        channel: 'instagram',
+        store_id: 'store-2',
+        store_name: '정왕동 불타는 쭈꾸미',
+        title: '신메뉴 치즈폭탄 쭈꾸미 릴스 & 카드뉴스 발행',
+        status: 'FAILED',
+        status_code: 429,
+        latency_ms: 1205,
+        payload_summary: 'Instagram Graph API 릴스 업로드 (video/mp4, 15초, 해시태그 18개)',
+        error_message: 'OAuthRateLimitException: Application request limit reached for Instagram Content Publishing API',
+        retry_count: 2,
+        external_url: '',
+        created_at: '2026-10-12 14:15:22',
+      },
+    ]).catch(console.error);
+  }
+
+  // 10. AI 프롬프트 튜닝 템플릿 시드 (auto_prompt_templates)
+  const promptCheck = await queryTable('auto_prompt_templates', { limit: 1 }).catch(() => ({ rows: [] }));
+  if (!promptCheck.rows || promptCheck.rows.length === 0) {
+    await insertRows('auto_prompt_templates', [
+      {
+        id: 'p-karrot',
+        channel: 'karrot',
+        name: '당근마켓 동네생활/비즈프로필 소식 엔진',
+        category: '하이퍼로컬 커뮤니티',
+        temperature: 0.7,
+        max_tokens: 1024,
+        top_p: 0.9,
+        system_prompt: '당신은 대한민국 골목상권 로컬 마케팅 전문가입니다. 당근마켓 동네생활 및 비즈프로필 소식글을 작성할 때 친근하고 따뜻한 이웃 화법을 사용하고 당근 단골 혜택 쿠폰을 반드시 포함합니다.',
+        user_prompt_template: '매장명: {storeName}\n업종: {industry}\n주요 메뉴/서비스: {coreItems}\n오늘의 이벤트/혜택: {eventBenefit}\n매장 위치/영업시간: {locationAndHours}\n\n위 정보를 바탕으로 동네 주민들의 마음을 사로잡는 당근마켓 비즈프로필 소식글을 작성해주세요.',
+        variables: 'storeName,industry,coreItems,eventBenefit,locationAndHours',
+        version: '1.2.0',
+        updated_at: '2026-10-12 16:30:00',
+        created_at: now,
+      },
+      {
+        id: 'p-naver-place',
+        channel: 'naver_place',
+        name: '네이버 스마트플레이스 SEO & 새소식/쿠폰 엔진',
+        category: '검색 지도 최적화',
+        temperature: 0.5,
+        max_tokens: 1024,
+        top_p: 0.85,
+        system_prompt: '당신은 네이버 플레이스 알고리즘과 로컬 검색 최적화(SEO) 수석 컨설턴트입니다. 지역명+핵심 키워드로 노출을 극대화하고 알림받기 쿠폰을 안내합니다.',
+        user_prompt_template: '매장명: {storeName}\n위치(동/역세권): {region}\n대표 키워드: {keywords}\n쿠폰/프로모션: {couponInfo}\n영업시간 및 주차: {hoursAndParking}\n\n스마트플레이스 방문자 전환율을 극대화하는 새소식 본문과 상위노출 태그 10개를 생성해주세요.',
+        variables: 'storeName,region,keywords,couponInfo,hoursAndParking',
+        version: '1.1.4',
+        updated_at: '2026-10-11 18:00:00',
+        created_at: now,
+      },
+      {
+        id: 'p-instagram',
+        channel: 'instagram',
+        name: '인스타그램 릴스 & 피드 카드뉴스 엔진',
+        category: 'SNS 비주얼 바이럴',
+        temperature: 0.8,
+        max_tokens: 1536,
+        top_p: 0.95,
+        system_prompt: '당신은 인스타그램 트렌드 바이럴 마케터입니다. 첫 3초 시선 강탈 후킹과 1:1 카드뉴스 슬라이드별 카피, 25개 해시태그를 생성합니다.',
+        user_prompt_template: '브랜드/매장: {brandName}\n타겟 고객: {targetAudience}\n핵심 소구점(USP): {usp}\n시각적 무드: {visualMood}\n\n릴스 캡션과 5슬라이드 카드뉴스 기획안을 작성해주세요.',
+        variables: 'brandName,targetAudience,usp,visualMood',
+        version: '2.0.1',
+        updated_at: '2026-10-12 10:15:00',
+        created_at: now,
+      },
+    ]).catch(console.error);
+  }
+
+  // 11. 점주 CS 문의 시드 (auto_inquiries & auto_inquiry_replies)
+  const inqCheck = await queryTable('auto_inquiries', { limit: 1 }).catch(() => ({ rows: [] }));
+  if (!inqCheck.rows || inqCheck.rows.length === 0) {
+    await insertRows('auto_inquiries', [
+      {
+        id: 'inq-101',
+        store_id: 'store-1',
+        store_name: '배곧 달콤베이커리',
+        author_name: '김점주 사장님',
+        contact: '010-9876-5432',
+        category: 'CHANNEL_CONNECT',
+        category_label: '채널 연동',
+        title: '네이버 스마트플레이스 새소식 연동 시 권한 오류가 발생합니다.',
+        content: '플레이스 새소식 발행을 시도했는데 "인증 토큰 유효기간 만료" 오류가 뜹니다. 어떻게 재연동해야 하나요?',
+        status: 'PENDING',
+        priority: 'HIGH',
+        sentiment: 'NEGATIVE',
+        internal_note: '스마트플레이스 API 연동 가이드 SMS 발송 예정',
+        created_at: '2026-10-12 15:40:00',
+      },
+      {
+        id: 'inq-102',
+        store_id: 'store-2',
+        store_name: '정왕동 불타는 쭈꾸미',
+        author_name: '박대표 사장님',
+        contact: '010-1234-5678',
+        category: 'BILLING',
+        category_label: '결제/세무',
+        title: '9월분 정기 구독 전자세금계산서 발행 내역 확인 부탁드립니다.',
+        content: '국세청 홈택스에서 9월 결제 건 전자세금계산서가 아직 조회가 안 되어서요. 사업자등록번호 재확인 부탁드립니다.',
+        status: 'RESOLVED',
+        priority: 'NORMAL',
+        sentiment: 'NEUTRAL',
+        internal_note: '홈택스 재발행 완료 및 승인번호 문자 통보 완료',
+        created_at: '2026-10-11 11:20:00',
+      },
+    ]).catch(console.error);
+
+    await insertRows('auto_inquiry_replies', [
+      {
+        id: 'rep-01',
+        inquiry_id: 'inq-102',
+        author: '오토마케팅 고객성공팀',
+        content: '사장님 안녕하세요! 확인 결과 9월 30일 자로 국세청 승인 완료(승인번호: 20261010-41000284-77610012) 처리되어 현재 홈택스에서 정상 조회되십니다. 번거롭게 해 드려 죄송합니다.',
+        is_ai_draft: 0,
+        created_at: '2026-10-11 13:00:00',
+      }
+    ]).catch(console.error);
+  }
+
+  // 12. SMS / 알림톡 발송 대장 시드 (auto_sms_logs)
+  const smsCheck = await queryTable('auto_sms_logs', { limit: 1 }).catch(() => ({ rows: [] }));
+  if (!smsCheck.rows || smsCheck.rows.length === 0) {
+    await insertRows('auto_sms_logs', [
+      {
+        id: 'sms-001',
+        type: 'LMS',
+        recipient_store: '전체 점주 (3개 매장)',
+        recipient_phone: '010-9876-**** 외 2건',
+        sender_number: '1588-0000',
+        content: '[오토마케팅 공지]\n사장님 안녕하세요! 가을 시즌 대비 당근마켓/플레이스 7대 채널 올인원 자동 생성 엔진이 런칭되었습니다.',
+        bytes: 142,
+        status: 'SENT',
+        cost: 40,
+        sent_at: '2026-10-12 14:00:00',
+        created_at: now,
+      },
+      {
+        id: 'sms-002',
+        type: 'SMS',
+        recipient_store: '배곧 달콤베이커리',
+        recipient_phone: '010-9876-5432',
+        sender_number: '1588-0000',
+        content: '[오토마케팅] 내일 오전 10시 당근 단골 소식 예약 발행이 대기 중입니다.',
+        bytes: 72,
+        status: 'SENT',
+        cost: 15,
+        sent_at: '2026-10-12 12:30:15',
+        created_at: now,
+      },
+    ]).catch(console.error);
+  }
+
+  // 13. 스마트 자동화 룰 시드 (auto_smart_rules)
+  const ruleCheck = await queryTable('auto_smart_rules', { limit: 1 }).catch(() => ({ rows: [] }));
+  if (!ruleCheck.rows || ruleCheck.rows.length === 0) {
+    await insertRows('auto_smart_rules', [
+      {
+        id: 'rule-01',
+        name: '🌧️ 비 오는 날 따뜻한 갓구운 빵 & 부침개 긴급 프로모션',
+        condition_type: 'WEATHER',
+        condition_summary: '기상청 강수 확률 70% 이상 또는 비 감지 시 (오전 10:30)',
+        target_channel: 'karrot',
+        action_template: '당근마켓 비즈프로필 소식 자동 등록: "비 오는 날 방문 고객 아메리카노 1잔 무료 쿠폰"',
+        is_active: 1,
+        last_triggered_at: '2026-10-10 10:30:00',
+        total_triggered_count: 14,
+        created_at: now,
+      },
+      {
+        id: 'rule-02',
+        name: '🔥 불타는 금요일 주말 모임 예약 유도 릴스/블로그',
+        condition_type: 'DAY_TIME',
+        condition_summary: '매주 금요일 오후 16:00 정기 트리거',
+        target_channel: 'instagram',
+        action_template: '인스타그램 릴스 캡션 & 네이버 블로그: 주말 단체 예약 혜택 콘텐츠 동시 디스패치',
+        is_active: 1,
+        last_triggered_at: '2026-10-09 16:00:00',
+        total_triggered_count: 28,
+        created_at: now,
+      },
+      {
+        id: 'rule-03',
+        name: '🏷️ 당일 마감 2시간 전 깜짝 타임세일 자동 쿠폰',
+        condition_type: 'STOCK',
+        condition_summary: '영업 종료 2시간 전 (매일 20:00)',
+        target_channel: 'naver_place',
+        action_template: '네이버 스마트플레이스 새소식 등록: "마감 세일 30% 즉시 할인 쿠폰" 자동 활성화',
+        is_active: 0,
+        last_triggered_at: '2026-10-08 20:00:00',
+        total_triggered_count: 8,
+        created_at: now,
+      },
+      {
+        id: 'rule-04',
+        name: '🎈 법정 공휴일 & 기념일 축하 프로모션',
+        condition_type: 'HOLIDAY',
+        condition_summary: '공휴일 D-1일 오전 11:00',
+        target_channel: 'all',
+        action_template: '7대 채널 1-Click 번들 생성 엔진 호출 ➔ 온·오프라인 에셋 동시 디스패치',
+        is_active: 1,
+        last_triggered_at: '2026-10-02 11:00:00',
+        total_triggered_count: 5,
+        created_at: now,
+      },
+    ]).catch(console.error);
+  }
+
+  // 14. 사업자 정보 및 법무 약관 시드 (auto_footer_configs)
+  const footerCheck = await queryTable('auto_footer_configs', { limit: 1 }).catch(() => ({ rows: [] }));
+  if (!footerCheck.rows || footerCheck.rows.length === 0) {
+    await insertRows('auto_footer_configs', [
+      {
+        id: 'default_footer',
+        company_name: '(주)오토마케팅',
+        ceo_name: '홍길동',
+        biz_number: '123-86-09876',
+        mail_order_number: '제 2026-경기시흥-0412호',
+        address: '경기도 시흥시 배곧4로 32-27, 골든플라자 5층 501호',
+        tel: '1588-0000',
+        email: 'support@auto-marketing.kr',
+        hosting_provider: 'Google Cloud Platform (GCP)',
+        privacy_manager: '김보안 (privacy@auto-marketing.kr)',
+        copyright_text: 'Copyright © 2026 Auto-Marketing Corp. All Rights Reserved.',
+        terms_of_service: '제1조 (목적)\n본 약관은 (주)오토마케팅이 제공하는 소상공인 마케팅 자동화 서비스 이용에 관한 권리와 의무를 규정합니다.',
+        privacy_policy: '1. 개인정보 수집 및 이용 목적: 소상공인 계정 식별 및 마케팅 토큰 결제 정산, 외부 SNS 채널 API 연동 관리.',
+        refund_policy: '제1조 (환불 규정): 토큰 미사용 시 결제일로부터 7일 이내 전액 환불이 가능합니다.',
+        updated_at: now,
       }
     ]).catch(console.error);
   }
 }
 
 /**
- * ⚡ 오토마케팅 통합 데이터베이스 초기화 및 자동 스키마 마이그레이션
+ * ⚡ 오토마케팅 통합 데이터베이스 초기화 및 자동 스키마 마이그레이션 (18대 SQLite 테이블)
  */
 export async function setupDatabase(force = false) {
   if (isDbInitialized && !force) return;
   if (dbInitPromise && !force) return dbInitPromise;
 
   dbInitPromise = (async () => {
-    console.log('[Auto-Marketing] 🚀 Initializing Auto-Marketing Database...');
+    console.log('[Auto-Marketing] 🚀 Initializing Auto-Marketing Database (18-Table Engine)...');
 
     // 1. auto_users
     await safeCreateTable('Auto-Marketing 회원 대장', [
@@ -421,6 +709,7 @@ export async function setupDatabase(force = false) {
     await safeCreateTable('Auto-Marketing 자주 묻는 질문 FAQ 대장', [
       { name: 'id', type: 'TEXT' },
       { name: 'category', type: 'TEXT' },
+      { name: 'category_label', type: 'TEXT' },
       { name: 'question', type: 'TEXT' },
       { name: 'answer', type: 'TEXT' },
       { name: 'sort_order', type: 'INTEGER' },
@@ -453,11 +742,162 @@ export async function setupDatabase(force = false) {
       { name: 'created_at', type: 'TEXT' },
     ], { tableName: 'auto_media' });
 
+    // 10. auto_pricing_plans
+    await safeCreateTable('Auto-Marketing SaaS 요금제 대장', [
+      { name: 'id', type: 'TEXT' },
+      { name: 'name', type: 'TEXT' },
+      { name: 'monthly_price', type: 'INTEGER' },
+      { name: 'token_quota', type: 'INTEGER' },
+      { name: 'estimated_bundles', type: 'INTEGER' },
+      { name: 'estimated_cost', type: 'INTEGER' },
+      { name: 'margin_rate', type: 'REAL' },
+      { name: 'created_at', type: 'TEXT' },
+    ], { tableName: 'auto_pricing_plans' });
+
+    // 11. auto_model_costs
+    await safeCreateTable('Auto-Marketing AI 모델 원가 대장', [
+      { name: 'id', type: 'TEXT' },
+      { name: 'name', type: 'TEXT' },
+      { name: 'provider', type: 'TEXT' },
+      { name: 'type', type: 'TEXT' },
+      { name: 'unit_cost', type: 'REAL' },
+      { name: 'typical_calls', type: 'INTEGER' },
+      { name: 'created_at', type: 'TEXT' },
+    ], { tableName: 'auto_model_costs' });
+
+    // 12. auto_tax_invoices
+    await safeCreateTable('Auto-Marketing 전자세금계산서 대장', [
+      { name: 'id', type: 'TEXT' },
+      { name: 'invoice_number', type: 'TEXT' },
+      { name: 'nts_approval_number', type: 'TEXT' },
+      { name: 'store_name', type: 'TEXT' },
+      { name: 'biz_number', type: 'TEXT' },
+      { name: 'ceo_name', type: 'TEXT' },
+      { name: 'email', type: 'TEXT' },
+      { name: 'item_description', type: 'TEXT' },
+      { name: 'supply_amount', type: 'INTEGER' },
+      { name: 'vat_amount', type: 'INTEGER' },
+      { name: 'total_amount', type: 'INTEGER' },
+      { name: 'status', type: 'TEXT' },
+      { name: 'issue_date', type: 'TEXT' },
+      { name: 'created_at', type: 'TEXT' },
+    ], { tableName: 'auto_tax_invoices' });
+
+    // 13. auto_dispatch_logs
+    await safeCreateTable('Auto-Marketing 외부 채널 디스패치 로그 대장', [
+      { name: 'id', type: 'TEXT' },
+      { name: 'channel', type: 'TEXT' },
+      { name: 'store_id', type: 'TEXT' },
+      { name: 'store_name', type: 'TEXT' },
+      { name: 'title', type: 'TEXT' },
+      { name: 'status', type: 'TEXT' },
+      { name: 'status_code', type: 'INTEGER' },
+      { name: 'latency_ms', type: 'INTEGER' },
+      { name: 'payload_summary', type: 'TEXT' },
+      { name: 'error_message', type: 'TEXT' },
+      { name: 'retry_count', type: 'INTEGER' },
+      { name: 'external_url', type: 'TEXT' },
+      { name: 'created_at', type: 'TEXT' },
+    ], { tableName: 'auto_dispatch_logs' });
+
+    // 14. auto_prompt_templates
+    await safeCreateTable('Auto-Marketing AI 프롬프트 템플릿 대장', [
+      { name: 'id', type: 'TEXT' },
+      { name: 'channel', type: 'TEXT' },
+      { name: 'name', type: 'TEXT' },
+      { name: 'category', type: 'TEXT' },
+      { name: 'temperature', type: 'REAL' },
+      { name: 'max_tokens', type: 'INTEGER' },
+      { name: 'top_p', type: 'REAL' },
+      { name: 'system_prompt', type: 'TEXT' },
+      { name: 'user_prompt_template', type: 'TEXT' },
+      { name: 'variables', type: 'TEXT' },
+      { name: 'version', type: 'TEXT' },
+      { name: 'updated_at', type: 'TEXT' },
+      { name: 'created_at', type: 'TEXT' },
+    ], { tableName: 'auto_prompt_templates' });
+
+    // 15. auto_inquiries
+    await safeCreateTable('Auto-Marketing 점주 CS 문의 티켓 대장', [
+      { name: 'id', type: 'TEXT' },
+      { name: 'store_id', type: 'TEXT' },
+      { name: 'store_name', type: 'TEXT' },
+      { name: 'author_name', type: 'TEXT' },
+      { name: 'contact', type: 'TEXT' },
+      { name: 'category', type: 'TEXT' },
+      { name: 'category_label', type: 'TEXT' },
+      { name: 'title', type: 'TEXT' },
+      { name: 'content', type: 'TEXT' },
+      { name: 'status', type: 'TEXT' },
+      { name: 'priority', type: 'TEXT' },
+      { name: 'sentiment', type: 'TEXT' },
+      { name: 'internal_note', type: 'TEXT' },
+      { name: 'created_at', type: 'TEXT' },
+    ], { tableName: 'auto_inquiries' });
+
+    // 16. auto_inquiry_replies
+    await safeCreateTable('Auto-Marketing 점주 CS 문의 답변 대장', [
+      { name: 'id', type: 'TEXT' },
+      { name: 'inquiry_id', type: 'TEXT' },
+      { name: 'author', type: 'TEXT' },
+      { name: 'content', type: 'TEXT' },
+      { name: 'is_ai_draft', type: 'INTEGER' },
+      { name: 'created_at', type: 'TEXT' },
+    ], { tableName: 'auto_inquiry_replies' });
+
+    // 17. auto_sms_logs
+    await safeCreateTable('Auto-Marketing SMS 알림톡 발송 대장', [
+      { name: 'id', type: 'TEXT' },
+      { name: 'type', type: 'TEXT' },
+      { name: 'recipient_store', type: 'TEXT' },
+      { name: 'recipient_phone', type: 'TEXT' },
+      { name: 'sender_number', type: 'TEXT' },
+      { name: 'content', type: 'TEXT' },
+      { name: 'bytes', type: 'INTEGER' },
+      { name: 'status', type: 'TEXT' },
+      { name: 'cost', type: 'INTEGER' },
+      { name: 'sent_at', type: 'TEXT' },
+      { name: 'created_at', type: 'TEXT' },
+    ], { tableName: 'auto_sms_logs' });
+
+    // 18. auto_smart_rules
+    await safeCreateTable('Auto-Marketing 스마트 자동화 규칙 대장', [
+      { name: 'id', type: 'TEXT' },
+      { name: 'name', type: 'TEXT' },
+      { name: 'condition_type', type: 'TEXT' },
+      { name: 'condition_summary', type: 'TEXT' },
+      { name: 'target_channel', type: 'TEXT' },
+      { name: 'action_template', type: 'TEXT' },
+      { name: 'is_active', type: 'INTEGER' },
+      { name: 'last_triggered_at', type: 'TEXT' },
+      { name: 'total_triggered_count', type: 'INTEGER' },
+      { name: 'created_at', type: 'TEXT' },
+    ], { tableName: 'auto_smart_rules' });
+
+    // 19. auto_footer_configs
+    await safeCreateTable('Auto-Marketing 사업자 정보 및 법무 약관 대장', [
+      { name: 'id', type: 'TEXT' },
+      { name: 'company_name', type: 'TEXT' },
+      { name: 'ceo_name', type: 'TEXT' },
+      { name: 'biz_number', type: 'TEXT' },
+      { name: 'mail_order_number', type: 'TEXT' },
+      { name: 'address', type: 'TEXT' },
+      { name: 'tel', type: 'TEXT' },
+      { name: 'email', type: 'TEXT' },
+      { name: 'hosting_provider', type: 'TEXT' },
+      { name: 'privacy_manager', type: 'TEXT' },
+      { name: 'copyright_text', type: 'TEXT' },
+      { name: 'terms_of_service', type: 'TEXT' },
+      { name: 'privacy_policy', type: 'TEXT' },
+      { name: 'refund_policy', type: 'TEXT' },
+      { name: 'updated_at', type: 'TEXT' },
+    ], { tableName: 'auto_footer_configs' });
+
     // 시드 데이터 주입
     await seedInitialData();
 
     isDbInitialized = true;
-    console.log('[Auto-Marketing] ✅ Database initialization and seed completed!');
+    console.log('[Auto-Marketing] ✅ 18대 통합 데이터베이스 초기화 및 시드 주입 완료!');
   })();
 
   return dbInitPromise;

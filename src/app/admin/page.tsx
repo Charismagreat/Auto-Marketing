@@ -861,7 +861,7 @@ export default function AdminPage() {
             <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-700 text-xs text-slate-400 space-y-2">
               <div className="font-bold text-white">데이터베이스 및 런타임 환경</div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
-                <div>• SQLite 8대 테이블: <span className="text-slate-200">정상 마운트</span></div>
+                <div>• SQLite 18대 통합 테이블: <span className="text-slate-200">영구 저장 마운트</span></div>
                 <div>• Turbopack 번들러: <span className="text-slate-200">초고속 컴파일</span></div>
                 <div>• Capacitor Android: <span className="text-slate-200">v7.0 동기화 완료</span></div>
               </div>

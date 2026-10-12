@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { setupDatabase, queryTable } from '@/lib/setup-db';
+import { executeSQL } from '@/lib/egdesk-helpers';
 
 export interface FooterConfig {
   companyName: string;
@@ -16,7 +18,7 @@ export interface FooterConfig {
   refundPolicy: string;
 }
 
-let mockFooter: FooterConfig = {
+const DEFAULT_FOOTER: FooterConfig = {
   companyName: '(주)오토마케팅',
   ceoName: '홍길동',
   bizNumber: '123-86-09876',
@@ -27,28 +29,38 @@ let mockFooter: FooterConfig = {
   hostingProvider: 'Google Cloud Platform (GCP)',
   privacyManager: '김보안 (privacy@auto-marketing.kr)',
   copyrightText: 'Copyright © 2026 Auto-Marketing Corp. All Rights Reserved.',
-  termsOfService: `제1조 (목적)
-본 약관은 (주)오토마케팅(이하 "회사")이 제공하는 소상공인 마케팅 자동화 서비스(이하 "서비스")의 이용과 관련하여 회사와 이용자 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
-
-제2조 (용어의 정의)
-1. "서비스"란 소상공인 점주가 당근마켓, 스마트플레이스, 인스타그램, 블로그 등 온·오프라인 마케팅 콘텐츠를 자동으로 생성하고 발행할 수 있도록 회사가 제공하는 웹 및 모바일 솔루션을 의미합니다.
-2. "토큰"이란 서비스 내에서 AI 에셋 생성 및 디스패치를 위해 사용되는 디지털 단위를 의미합니다.`,
-  privacyPolicy: `1. 개인정보의 수집 및 이용 목적
-회사는 다음의 목적을 위하여 개인정보를 처리합니다. 처리하고 있는 개인정보는 다음의 목적 이외의 용도로는 이용되지 않으며, 이용 목적이 변경되는 경우에는 개인정보 보호법 제18조에 따라 별도의 동의를 받는 등 필요한 조치를 이행할 예정입니다.
-- 소상공인 회원가입 및 본인 확인, 마케팅 토큰 충전 및 결제 정산, 외부 SNS 채널 연동 API 인증 토큰 관리
-
-2. 수집하는 개인정보 항목
-- 필수항목: 성명, 휴대전화번호, 이메일 주소, 사업자등록번호, 상호명, 사업장 주소, 외부 채널 연동 키`,
-  refundPolicy: `제1조 (청약철회 및 환불 규정)
-1. 이용자가 구매한 마케팅 토큰 또는 정기 구독 상품은 결제일로부터 7일 이내에 토큰을 전혀 사용하지 않은 경우 전액 환불이 가능합니다.
-2. 이미 1-Click 번들 생성 엔진 또는 외부 디스패치가 1회 이상 실행된 경우, 해당 사용분(소모된 토큰 가액)을 공제한 잔액이 환불됩니다.`,
+  termsOfService: `제1조 (목적)\n본 약관은 (주)오토마케팅이 제공하는 소상공인 마케팅 자동화 서비스 이용에 관한 권리와 의무를 규정합니다.`,
+  privacyPolicy: `1. 개인정보의 수집 및 이용 목적\n회사는 소상공인 회원가입 및 본인 확인, 마케팅 토큰 충전 및 결제 정산, 외부 SNS 채널 연동 API 인증 관리를 위해 개인정보를 처리합니다.`,
+  refundPolicy: `제1조 (청약철회 및 환불 규정)\n1. 이용자가 구매한 마케팅 토큰은 결제일로부터 7일 이내 미사용 시 전액 환불됩니다.`,
 };
 
 export async function GET() {
   try {
+    await setupDatabase();
+    const res = await queryTable('auto_footer_configs', { limit: 1 }).catch(() => ({ rows: [] }));
+    const row = res.rows?.[0];
+
+    const data: FooterConfig = row
+      ? {
+          companyName: row.company_name || DEFAULT_FOOTER.companyName,
+          ceoName: row.ceo_name || DEFAULT_FOOTER.ceoName,
+          bizNumber: row.biz_number || DEFAULT_FOOTER.bizNumber,
+          mailOrderNumber: row.mail_order_number || DEFAULT_FOOTER.mailOrderNumber,
+          address: row.address || DEFAULT_FOOTER.address,
+          tel: row.tel || DEFAULT_FOOTER.tel,
+          email: row.email || DEFAULT_FOOTER.email,
+          hostingProvider: row.hosting_provider || DEFAULT_FOOTER.hostingProvider,
+          privacyManager: row.privacy_manager || DEFAULT_FOOTER.privacyManager,
+          copyrightText: row.copyright_text || DEFAULT_FOOTER.copyrightText,
+          termsOfService: row.terms_of_service || DEFAULT_FOOTER.termsOfService,
+          privacyPolicy: row.privacy_policy || DEFAULT_FOOTER.privacyPolicy,
+          refundPolicy: row.refund_policy || DEFAULT_FOOTER.refundPolicy,
+        }
+      : DEFAULT_FOOTER;
+
     return NextResponse.json({
       success: true,
-      data: mockFooter,
+      data,
     });
   } catch (error: any) {
     return NextResponse.json(
@@ -58,18 +70,38 @@ export async function GET() {
   }
 }
 
+// 사업자 정보 및 법무 약관 수정 (SQLite DB 영구 반영)
 export async function PUT(req: Request) {
   try {
-    const body = await req.json();
-    mockFooter = {
-      ...mockFooter,
-      ...body,
-    };
+    await setupDatabase();
+    const body: Partial<FooterConfig> = await req.json();
+    const now = new Date().toISOString();
+
+    const escape = (str?: string) => (str || '').replace(/'/g, "''");
+
+    const sets: string[] = [];
+    if (body.companyName !== undefined) sets.push(`company_name = '${escape(body.companyName)}'`);
+    if (body.ceoName !== undefined) sets.push(`ceo_name = '${escape(body.ceoName)}'`);
+    if (body.bizNumber !== undefined) sets.push(`biz_number = '${escape(body.bizNumber)}'`);
+    if (body.mailOrderNumber !== undefined) sets.push(`mail_order_number = '${escape(body.mailOrderNumber)}'`);
+    if (body.address !== undefined) sets.push(`address = '${escape(body.address)}'`);
+    if (body.tel !== undefined) sets.push(`tel = '${escape(body.tel)}'`);
+    if (body.email !== undefined) sets.push(`email = '${escape(body.email)}'`);
+    if (body.hostingProvider !== undefined) sets.push(`hosting_provider = '${escape(body.hostingProvider)}'`);
+    if (body.privacyManager !== undefined) sets.push(`privacy_manager = '${escape(body.privacyManager)}'`);
+    if (body.copyrightText !== undefined) sets.push(`copyright_text = '${escape(body.copyrightText)}'`);
+    if (body.termsOfService !== undefined) sets.push(`terms_of_service = '${escape(body.termsOfService)}'`);
+    if (body.privacyPolicy !== undefined) sets.push(`privacy_policy = '${escape(body.privacyPolicy)}'`);
+    if (body.refundPolicy !== undefined) sets.push(`refund_policy = '${escape(body.refundPolicy)}'`);
+    sets.push(`updated_at = '${now}'`);
+
+    if (sets.length > 0) {
+      await executeSQL(`UPDATE auto_footer_configs SET ${sets.join(', ')} WHERE id = 'default_footer';`);
+    }
 
     return NextResponse.json({
       success: true,
-      message: '사업자 정보 및 법무 약관이 실시간으로 저장 및 프론트엔드에 반영되었습니다.',
-      data: mockFooter,
+      message: '사업자 정보 및 법무 약관이 SQLite DB에 영구 저장되었으며 프론트엔드에 실시간 반영되었습니다.',
     });
   } catch (error: any) {
     return NextResponse.json(

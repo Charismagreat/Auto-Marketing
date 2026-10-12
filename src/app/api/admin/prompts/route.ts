@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { setupDatabase, queryTable } from '@/lib/setup-db';
+import { executeSQL } from '@/lib/egdesk-helpers';
 
 export interface PromptConfig {
   id: string;
@@ -15,7 +17,7 @@ export interface PromptConfig {
   updatedAt: string;
 }
 
-let mockPrompts: PromptConfig[] = [
+const DEFAULT_PROMPTS: PromptConfig[] = [
   {
     id: 'p-karrot',
     channel: 'karrot',
@@ -118,65 +120,56 @@ let mockPrompts: PromptConfig[] = [
     temperature: 0.65,
     maxTokens: 1024,
     topP: 0.85,
-    systemPrompt: `당신은 전단지 수거함에 버려지지 않고 냉장고에 붙게 만드는 오프라인 다이렉트 마케팅 전문가입니다.
-1. 보행자가 3초 만에 혜택을 인지할 수 있는 파격적인 메인 헤드라인을 구성합니다.
-2. 3대 핵심 혜택(할인율, 1+1 증정, 한정 수량)을 불렛 포인트로 시인성 높게 정리합니다.
-3. 전단지 하단 절취 쿠폰에 들어갈 한 줄 쿠폰 카피를 명확히 제시합니다.
-4. 약도 안내 및 전화 주문/포장 예약 유도 문구를 포함합니다.`,
+    systemPrompt: `당신은 전단지 수거함에 버려지지 않는 골목상권 전단지 카피라이터입니다.
+1. 상단 메인 헤드라인은 "이 동네 주민이라면 꼭 알아야 할 1가지" 류의 파격적 호기심을 유발합니다.
+2. 중간 서브카피는 매장의 3대 장점을 직관적인 불렛포인트로 요약합니다.
+3. 하단에는 '오려오면 2,000원 할인'과 같은 실물 쿠폰 바우처 박스를 배치합니다.`,
     userPromptTemplate: `매장명: {storeName}
-전단지 배포 목적: {purpose}
-파격 할인/프로모션: {offer}
-매장 주소 및 전화번호: {contact}
+핵심 혜택/할인: {discountBenefit}
+대표 상품: {flagshipProduct}
+찾아오시는 길: {directions}
 
-오프라인 A4 전단지용 메인 헤드라인, 서브카피, 쿠폰 문구를 도출해주세요.`,
-    variables: ['storeName', 'purpose', 'offer', 'contact'],
-    version: '1.0.4',
+A4 인쇄 전단지용 카피를 작성해주세요.`,
+    variables: ['storeName', 'discountBenefit', 'flagshipProduct', 'directions'],
+    version: '1.0.5',
     updatedAt: '2026-10-12 13:00:00',
   },
   {
     id: 'p-video-short',
     channel: 'video_short',
-    name: '15초 숏폼 숏츠/릴스 초단기 대본 엔진',
-    category: '비디오 숏폼',
+    name: '15초 숏폼 릴스/쇼츠 영상 타임라인 스크립트 엔진',
+    category: '숏폼 영상 크리에이티브',
     temperature: 0.75,
-    maxTokens: 1024,
+    maxTokens: 1200,
     topP: 0.9,
-    systemPrompt: `당신은 유튜브 쇼츠 및 인스타 릴스 15초 전문 영상 시나리오 작가입니다.
-0~3초: 시선 강탈 훅(Hooking) 장면과 내레이션
-4~10초: 본론(감각적인 조리/시연/비포애프터 연출)
-11~15초: 클라이맥스 및 즉각적인 행동 유도(CTA)
-영상 촬영 가이드(카메라 앵글, BGM 템포, 자막 텍스트, AI 보이스 대본)를 타임코드별로 명시합니다.`,
+    systemPrompt: `당신은 숏폼 떡상 전문 PD입니다.
+15초 영상을 0-3초(충격 후킹), 3-10초(시각적 쾌감/제조 클로즈업), 10-15초(방문 촉구) 구간으로 정밀 분할하여 비주얼 연출 지시문과 나레이션 대사를 생성합니다.`,
     userPromptTemplate: `매장명: {storeName}
-영상 주제: {topic}
-비주얼 포인트: {visualPoint}
-목표 반응: {goal}
+촬영 대상 메뉴: {menuName}
+강조할 감각: {sensoryFocus}
 
-15초 타임라인별 영상 씬(Scene) 가이드와 보이스오버(VO) 대본을 작성해주세요.`,
-    variables: ['storeName', 'topic', 'visualPoint', 'goal'],
-    version: '1.1.2',
-    updatedAt: '2026-10-12 12:30:00',
+15초 숏폼 영상 스크립트를 작성해주세요.`,
+    variables: ['storeName', 'menuName', 'sensoryFocus'],
+    version: '2.1.0',
+    updatedAt: '2026-10-12 12:40:00',
   },
   {
     id: 'p-detail-page',
     channel: 'detail_page',
-    name: '스마트스토어/배민 상세페이지 설득 전환 엔진',
-    category: '상세페이지 전환',
+    name: '네이버 스마트스토어 860px 상세페이지 기획 엔진',
+    category: 'E-커머스 전환 상세페이지',
     temperature: 0.55,
-    maxTokens: 2048,
-    topP: 0.9,
-    systemPrompt: `당신은 구매 전환율(CVR) 20% 이상을 달성하는 상세페이지 카피라이터입니다.
-1. 고객의 결핍(Pain Point)을 건드리는 공감형 인트로
-2. 타사와 차별화되는 우리 매장만의 3대 절대 강점
-3. 사장님의 철학과 위생/품질 보증 약속
-4. 실제 고객들의 별점 5점 리얼 리뷰 하이라이트
-5. 배송/포장 안내 및 자주 묻는 질문(FAQ)의 논리적인 설득 플로우를 구성합니다.`,
-    userPromptTemplate: `상품/매장명: {productName}
-원재료/제조 특장점: {specialPoints}
-타겟 소비자의 고민: {customerPain}
-가격 및 옵션: {priceOptions}
+    maxTokens: 2500,
+    topP: 0.85,
+    systemPrompt: `당신은 스마트스토어 월 매출 1억을 만드는 전문 MD입니다.
+인트로(문제제기) -> 왜 우리 매장인가(신뢰 구축) -> 제품 클로즈업(디테일) -> 안전 포장 및 배송 안내 -> 고객 후기 요약으로 이어지는 고전환 상세페이지 구조를 설계합니다.`,
+    userPromptTemplate: `상품명: {productName}
+원재료/특징: {features}
+가격/구성: {pricePackage}
+배송 방식: {shippingInfo}
 
-고객이 스크롤을 내리며 구매 버튼을 누르게 만드는 고전환 상세페이지 구조와 카피를 작성해주세요.`,
-    variables: ['productName', 'specialPoints', 'customerPain', 'priceOptions'],
+네이버 스마트스토어 860px 상세페이지 섹션별 기획안을 작성해주세요.`,
+    variables: ['productName', 'features', 'pricePackage', 'shippingInfo'],
     version: '1.4.0',
     updatedAt: '2026-10-12 11:15:00',
   },
@@ -184,19 +177,37 @@ let mockPrompts: PromptConfig[] = [
 
 export async function GET(req: Request) {
   try {
+    await setupDatabase();
     const { searchParams } = new URL(req.url);
     const channel = searchParams.get('channel');
 
-    let result = [...mockPrompts];
+    const res = await queryTable('auto_prompt_templates', { limit: 50 }).catch(() => ({ rows: [] }));
+    let list: PromptConfig[] = (res.rows && res.rows.length > 0)
+      ? res.rows.map((r: any) => ({
+          id: r.id,
+          channel: r.channel as any,
+          name: r.name || '',
+          category: r.category || '',
+          temperature: Number(r.temperature) || 0.7,
+          maxTokens: Number(r.max_tokens) || 1024,
+          topP: Number(r.top_p) || 0.9,
+          systemPrompt: r.system_prompt || '',
+          userPromptTemplate: r.user_prompt_template || '',
+          variables: typeof r.variables === 'string' ? r.variables.split(',').map((s: string) => s.trim()) : [],
+          version: r.version || '1.0.0',
+          updatedAt: r.updated_at || '',
+        }))
+      : DEFAULT_PROMPTS;
+
     if (channel && channel !== 'ALL') {
-      result = result.filter((p) => p.channel === channel);
+      list = list.filter((p) => p.channel === channel);
     }
 
     return NextResponse.json({
       success: true,
       data: {
-        prompts: result,
-        total: result.length,
+        prompts: list,
+        total: list.length,
       },
     });
   } catch (error: any) {
@@ -207,37 +218,36 @@ export async function GET(req: Request) {
   }
 }
 
-// 프롬프트 수정 및 실시간 튜닝
+// 프롬프트 수정 및 실시간 튜닝 (SQLite DB 영구 반영)
 export async function PUT(req: Request) {
   try {
+    await setupDatabase();
     const body = await req.json();
     const { id, systemPrompt, userPromptTemplate, temperature, maxTokens, topP } = body;
 
-    const index = mockPrompts.findIndex((p) => p.id === id);
-    if (index === -1) {
-      return NextResponse.json({ success: false, error: '해당 프롬프트 설정을 찾을 수 없습니다.' }, { status: 404 });
-    }
+    const res = await queryTable('auto_prompt_templates', { limit: 50 }).catch(() => ({ rows: [] }));
+    const current = (res.rows || []).find((r: any) => r.id === id);
 
-    const currentVersion = mockPrompts[index].version;
+    const currentVersion = current?.version || '1.0.0';
     const versionParts = currentVersion.split('.').map(Number);
     versionParts[2] = (versionParts[2] || 0) + 1; // 패치 버전 자동 증가
     const newVersion = versionParts.join('.');
+    const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
 
-    mockPrompts[index] = {
-      ...mockPrompts[index],
-      systemPrompt: systemPrompt ?? mockPrompts[index].systemPrompt,
-      userPromptTemplate: userPromptTemplate ?? mockPrompts[index].userPromptTemplate,
-      temperature: temperature !== undefined ? Number(temperature) : mockPrompts[index].temperature,
-      maxTokens: maxTokens !== undefined ? Number(maxTokens) : mockPrompts[index].maxTokens,
-      topP: topP !== undefined ? Number(topP) : mockPrompts[index].topP,
-      version: newVersion,
-      updatedAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
-    };
+    const safeSystemPrompt = (systemPrompt ?? current?.system_prompt ?? '').replace(/'/g, "''");
+    const safeUserTemplate = (userPromptTemplate ?? current?.user_prompt_template ?? '').replace(/'/g, "''");
+    const safeTemp = temperature !== undefined ? Number(temperature) : Number(current?.temperature || 0.7);
+    const safeMaxTokens = maxTokens !== undefined ? Number(maxTokens) : Number(current?.max_tokens || 1024);
+    const safeTopP = topP !== undefined ? Number(topP) : Number(current?.top_p || 0.9);
+
+    await executeSQL(
+      `UPDATE auto_prompt_templates SET system_prompt = '${safeSystemPrompt}', user_prompt_template = '${safeUserTemplate}', temperature = ${safeTemp}, max_tokens = ${safeMaxTokens}, top_p = ${safeTopP}, version = '${newVersion}', updated_at = '${now}' WHERE id = '${id}';`
+    );
 
     return NextResponse.json({
       success: true,
-      message: `${mockPrompts[index].name} 프롬프트 튜닝이 무배포 실시간 반영되었습니다 (v${newVersion}).`,
-      data: mockPrompts[index],
+      message: `프롬프트 튜닝이 SQLite DB에 영구 저장되었으며 실시간 무배포 반영되었습니다 (v${newVersion}).`,
+      data: { id, version: newVersion, updatedAt: now },
     });
   } catch (error: any) {
     return NextResponse.json(

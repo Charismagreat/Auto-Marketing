@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { setupDatabase, queryTable, insertRows } from '@/lib/setup-db';
 
 export interface SmsMessage {
   id: string;
@@ -11,31 +12,6 @@ export interface SmsMessage {
   status: 'SENT' | 'FAILED';
   sentAt: string;
 }
-
-let mockSmsHistory: SmsMessage[] = [
-  {
-    id: 'sms-001',
-    type: 'LMS',
-    recipientStore: '전체 점주 (3개 매장)',
-    recipientPhone: '010-9876-**** 외 2건',
-    senderNumber: '1588-0000',
-    content: '[오토마케팅 공지]\n사장님 안녕하세요! 가을 시즌 대비 당근마켓/플레이스 7대 채널 올인원 자동 생성 엔진이 런칭되었습니다. 대시보드에서 1-Click 번들 생성을 체험해 보세요!',
-    bytes: 142,
-    status: 'SENT',
-    sentAt: '2026-10-12 14:00:00',
-  },
-  {
-    id: 'sms-002',
-    type: 'SMS',
-    recipientStore: '배곧 달콤베이커리',
-    recipientPhone: '010-9876-5432',
-    senderNumber: '1588-0000',
-    content: '[오토마케팅] 내일 오전 10시 당근 단골 소식 예약 발행이 대기 중입니다.',
-    bytes: 72,
-    status: 'SENT',
-    sentAt: '2026-10-12 12:30:15',
-  },
-];
 
 // 발신 번호 목록
 const REGISTERED_CALLERS = [
@@ -64,10 +40,25 @@ const SMS_TEMPLATES = [
 
 export async function GET() {
   try {
+    await setupDatabase();
+    const res = await queryTable('auto_sms_logs', { limit: 100, orderBy: 'created_at', orderDirection: 'DESC' }).catch(() => ({ rows: [] }));
+
+    const history: SmsMessage[] = (res.rows || []).map((r: any) => ({
+      id: r.id,
+      type: (r.type || 'SMS') as any,
+      recipientStore: r.recipient_store || '',
+      recipientPhone: r.recipient_phone || '',
+      senderNumber: r.sender_number || '1588-0000',
+      content: r.content || '',
+      bytes: Number(r.bytes) || 0,
+      status: (r.status || 'SENT') as any,
+      sentAt: r.sent_at || '',
+    }));
+
     return NextResponse.json({
       success: true,
       data: {
-        history: mockSmsHistory,
+        history,
         callers: REGISTERED_CALLERS,
         templates: SMS_TEMPLATES,
         balance: {
@@ -86,9 +77,10 @@ export async function GET() {
   }
 }
 
-// SMS/알림톡 단체 발송
+// SMS/알림톡 단체 발송 (SQLite DB 영구 반영)
 export async function POST(req: Request) {
   try {
+    await setupDatabase();
     const body = await req.json();
     const { targetGroup, senderNumber, content, recipientList } = body;
 
@@ -96,7 +88,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: '메시지 본문이 누락되었습니다.' }, { status: 400 });
     }
 
-    // 바이트 수 계산 (한글 2바이트, 영문/기호 1바이트)
     let totalBytes = 0;
     for (let i = 0; i < content.length; i++) {
       totalBytes += content.charCodeAt(i) > 127 ? 2 : 1;
@@ -104,6 +95,7 @@ export async function POST(req: Request) {
 
     const type: 'SMS' | 'LMS' = totalBytes > 90 ? 'LMS' : 'SMS';
     const storeCount = recipientList?.length || (targetGroup === 'ALL' ? 3 : 1);
+    const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
 
     const newRecord: SmsMessage = {
       id: `sms-${Date.now()}`,
@@ -114,14 +106,28 @@ export async function POST(req: Request) {
       content,
       bytes: totalBytes,
       status: 'SENT',
-      sentAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      sentAt: now,
     };
 
-    mockSmsHistory.unshift(newRecord);
+    await insertRows('auto_sms_logs', [
+      {
+        id: newRecord.id,
+        type: newRecord.type,
+        recipient_store: newRecord.recipientStore,
+        recipient_phone: newRecord.recipientPhone,
+        sender_number: newRecord.senderNumber,
+        content: newRecord.content,
+        bytes: newRecord.bytes,
+        status: newRecord.status,
+        cost: type === 'SMS' ? 15 : 40,
+        sent_at: newRecord.sentAt,
+        created_at: new Date().toISOString(),
+      },
+    ]);
 
     return NextResponse.json({
       success: true,
-      message: `${storeCount}개 매장에 ${type} 메시지 발송이 완료되었습니다 (${totalBytes} Byte).`,
+      message: `${storeCount}개 매장에 ${type} 메시지 발송이 완료되었으며 SQLite DB에 기록되었습니다 (${totalBytes} Byte).`,
       record: newRecord,
     });
   } catch (error: any) {

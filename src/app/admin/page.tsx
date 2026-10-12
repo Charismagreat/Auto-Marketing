@@ -30,13 +30,21 @@ import {
   Clock,
   Radio,
   Sliders,
+  MessageSquare,
+  Smartphone,
+  Zap,
 } from 'lucide-react';
 import AdminDispatchLogsTab from './components/AdminDispatchLogsTab';
 import AdminPromptsTab from './components/AdminPromptsTab';
 import AdminProposalModal from './components/AdminProposalModal';
+import AdminInquiriesTab from './components/AdminInquiriesTab';
+import AdminSmsTab from './components/AdminSmsTab';
+import AdminSmartRulesTab from './components/AdminSmartRulesTab';
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<'users' | 'tokens' | 'assets' | 'campaigns' | 'dispatch' | 'prompts' | 'cms' | 'system'>('users');
+  const [activeTab, setActiveTab] = useState<
+    'users' | 'tokens' | 'assets' | 'campaigns' | 'dispatch' | 'prompts' | 'inquiries' | 'sms' | 'rules' | 'cms' | 'system'
+  >('users');
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
@@ -277,6 +285,42 @@ export default function AdminPage() {
           </button>
 
           <button
+            onClick={() => setActiveTab('inquiries')}
+            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
+              activeTab === 'inquiries'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            <MessageSquare className="w-4 h-4" />
+            <span>7. 점주 CS 문의 & AI 답변</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('sms')}
+            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
+              activeTab === 'sms'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            <Smartphone className="w-4 h-4" />
+            <span>8. SMS / 알림톡 발송</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('rules')}
+            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
+              activeTab === 'rules'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            <Zap className="w-4 h-4" />
+            <span>9. 스마트 자동화 룰</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('cms')}
             className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
               activeTab === 'cms'
@@ -285,7 +329,7 @@ export default function AdminPage() {
             }`}
           >
             <Compass className="w-4 h-4" />
-            <span>7. 바이럴 레퍼런스 CMS</span>
+            <span>10. 바이럴 레퍼런스 CMS</span>
           </button>
 
           <button
@@ -297,7 +341,7 @@ export default function AdminPage() {
             }`}
           >
             <Cpu className="w-4 h-4" />
-            <span>8. AI 모델 믹스 & 인프라</span>
+            <span>11. AI 모델 믹스 & 인프라</span>
           </button>
         </div>
 
@@ -592,7 +636,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 탭 6: AI 시스템 프롬프트 관리 & 실시간 튜닝 스튜디오 (신규) */}
+        {/* 탭 6: AI 시스템 프롬프트 관리 & 실시간 튜닝 스튜디오 */}
         {activeTab === 'prompts' && (
           <div className="space-y-4">
             <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl mb-4">
@@ -605,7 +649,46 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 탭 7: 벤치마크 레퍼런스 CMS */}
+        {/* 탭 7: 1:1 점주 CS 문의 & AI 답변 티켓 시스템 (신규) */}
+        {activeTab === 'inquiries' && (
+          <div className="space-y-4">
+            <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl mb-4">
+              <h2 className="text-base font-extrabold text-white">1:1 마케팅 CS 문의 & 상담 티켓 센터</h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                점주님들의 채널 연동, 마케팅 품질, 요금 문의를 접수하고 ⚡ AI 원클릭 답변 초안 생성을 통해 초고속으로 친절한 솔루션을 제공합니다.
+              </p>
+            </div>
+            <AdminInquiriesTab />
+          </div>
+        )}
+
+        {/* 탭 8: 점주 긴급 문자 & 알림톡 발송 센터 (신규) */}
+        {activeTab === 'sms' && (
+          <div className="space-y-4">
+            <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl mb-4">
+              <h2 className="text-base font-extrabold text-white">SMS / 카카오 알림톡 긴급 공지 & 마케팅 발송 센터</h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                점주 전체 또는 개별 매장으로 바이트 수 자동 판별(SMS 90B / LMS 2000B) 긴급 공지, 토큰 충전 알림, 예약 리마인더를 발송합니다.
+              </p>
+            </div>
+            <AdminSmsTab />
+          </div>
+        )}
+
+        {/* 탭 9: 스마트 디스패치 자동화 규칙 엔진 (신규) */}
+        {activeTab === 'rules' && (
+          <div className="space-y-4">
+            <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl mb-4">
+              <h2 className="text-base font-extrabold text-white">이벤트 기반 스마트 디스패치 자동화 규칙 엔진</h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                날씨(비/폭염), 골든 타임(불금/주말), 마감 시간 조건 충족 시 타겟 채널(당근/플레이스/인스타)로 프로모션 콘텐츠를 무인 자동 발행합니다.
+              </p>
+            </div>
+            <AdminSmartRulesTab />
+          </div>
+        )}
+
+        {/* 탭 10: 벤치마크 레퍼런스 CMS */}
         {activeTab === 'cms' && (
           <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl space-y-6">
             <div className="flex items-center justify-between">
@@ -641,7 +724,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 탭 6: AI 모델 믹스 & 시스템 인프라 */}
+        {/* 탭 11: AI 모델 믹스 & 시스템 인프라 */}
         {activeTab === 'system' && (
           <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl space-y-6">
             <div className="flex items-center justify-between">

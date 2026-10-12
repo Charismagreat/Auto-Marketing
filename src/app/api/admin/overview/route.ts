@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { executeSQL, queryTable } from '@/lib/egdesk-helpers';
+import { executeSQL, queryTable, updateRows, insertRows } from '@/lib/egdesk-helpers';
 
 export async function GET() {
   try {
@@ -158,20 +158,62 @@ export async function POST(req: Request) {
       const targetUserId = userId || 'usr_pongshin_master';
       const delta = Number(amount) || 0;
 
-      await executeSQL(`
-        UPDATE auto_users 
-        SET token_balance = COALESCE(token_balance, 0) + (${delta}) 
-        WHERE id = '${targetUserId}'
-      `);
+      // 1. 대상 사용자 조회 (id 또는 email 매칭)
+      const userRes = await queryTable('auto_users', {
+        filters: { id: targetUserId },
+        limit: 1,
+      }).catch(() => ({ rows: [] }));
 
+      let user = userRes.rows?.[0];
+      if (!user) {
+        const emailRes = await queryTable('auto_users', {
+          filters: { email: targetUserId },
+          limit: 1,
+        }).catch(() => ({ rows: [] }));
+        user = emailRes.rows?.[0];
+      }
+
+      if (!user) {
+        return NextResponse.json({ success: false, error: `사용자(${targetUserId})를 찾을 수 없습니다.` }, { status: 404 });
+      }
+
+      const currentBalance = Number(user.token_balance || 0);
+      const newBalance = Math.max(0, currentBalance + delta);
+      const now = new Date().toISOString();
+
+      // 2. 이지데스크 updateRows 도구로 안전하게 토큰 업데이트
+      await updateRows('auto_users', {
+        token_balance: newBalance,
+        updated_at: now,
+      }, {
+        filters: { id: user.id },
+      });
+
+      // 3. 감사 로그 기록 (ai_token_usage_logs)
+      try {
+        await insertRows('ai_token_usage_logs', [{
+          id: `log_admin_${Date.now()}`,
+          user_id: user.id,
+          tokens_used: delta < 0 ? Math.abs(delta) : 0,
+          action: delta >= 0 ? 'ADMIN_CREDIT' : 'ADMIN_DEDUCT',
+          created_at: now,
+          description: reason || (delta >= 0 ? '관리자 수동 지급' : '관리자 수동 차감'),
+        }]);
+      } catch (logErr) {
+        console.warn('Audit log write skipped:', logErr);
+      }
+
+      const actionText = delta >= 0 ? '지급(+)' : '차감(-)';
       return NextResponse.json({
         success: true,
-        message: `사용자(${targetUserId})에게 ${delta > 0 ? '+' : ''}${delta.toLocaleString()}T 토큰이 성공적으로 조정되었습니다. (사유: ${reason || '관리자 수동 지급'})`
+        currentBalance: newBalance,
+        message: `${user.name || user.email} 점주님께 토큰 ${delta >= 0 ? '+' : ''}${delta.toLocaleString()}T이 ${actionText}되었습니다. (반영 후 잔액: ${newBalance.toLocaleString()}T)`
       });
     }
 
     return NextResponse.json({ success: false, error: 'Unknown action' }, { status: 400 });
   } catch (error: any) {
+    console.error('Adjust token error:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

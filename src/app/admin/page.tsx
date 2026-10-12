@@ -133,9 +133,10 @@ export default function AdminPage() {
   // 맞춤 마케팅 견적서 모달 상태
   const [showProposalModal, setShowProposalModal] = useState(false);
 
-  // 토큰 수동 지급 모달 상태
+  // 토큰 수동 지급/차감 모달 상태
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [adjustMode, setAdjustMode] = useState<'credit' | 'deduct'>('credit');
   const [tokenAmount, setTokenAmount] = useState('50000');
   const [tokenReason, setTokenReason] = useState('신규 우수 매장 지원 프로모션');
   const [isAdjusting, setIsAdjusting] = useState(false);
@@ -170,6 +171,10 @@ export default function AdminPage() {
     e.preventDefault();
     if (!selectedUser) return;
     setIsAdjusting(true);
+
+    const rawAmount = Math.abs(Number(tokenAmount) || 0);
+    const finalAmount = adjustMode === 'deduct' ? -rawAmount : rawAmount;
+
     try {
       const res = await fetch('/api/admin/overview', {
         method: 'POST',
@@ -177,7 +182,7 @@ export default function AdminPage() {
         body: JSON.stringify({
           action: 'adjust_token',
           userId: selectedUser.id,
-          amount: Number(tokenAmount),
+          amount: finalAmount,
           reason: tokenReason,
         }),
       });
@@ -645,19 +650,34 @@ export default function AdminPage() {
                           정상 가동
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 text-right space-x-2">
+                      <td className="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap">
                         <button
                           onClick={() => {
                             setSelectedUser(u);
+                            setAdjustMode('credit');
+                            setTokenAmount('50000');
+                            setTokenReason('신규 우수 매장 지원 프로모션');
                             setShowTokenModal(true);
                           }}
-                          className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold transition shadow-xs cursor-pointer"
+                          className="px-2.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold transition shadow-xs cursor-pointer"
                         >
-                          + 토큰 지급
+                          + 지급
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedUser(u);
+                            setAdjustMode('deduct');
+                            setTokenAmount('10000');
+                            setTokenReason('오발급 회수 / 수동 정산 차감');
+                            setShowTokenModal(true);
+                          }}
+                          className="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-bold transition border border-rose-200 cursor-pointer"
+                        >
+                          - 차감
                         </button>
                         <Link
                           href="/"
-                          className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold transition border border-slate-200"
+                          className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold transition border border-slate-200 inline-block"
                         >
                           대리 접속 ➔
                         </Link>
@@ -1081,15 +1101,15 @@ export default function AdminPage() {
 
       </main>
 
-      {/* 토큰 수동 지급 모달 (시트봇 스타일 화이트 모달) */}
+      {/* 토큰 수동 지급/차감 모달 (시트봇 스타일 화이트 모달) */}
       {showTokenModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-5">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <Wallet className="w-5 h-5 text-amber-500" />
+                <Wallet className={`w-5 h-5 ${adjustMode === 'credit' ? 'text-indigo-600' : 'text-rose-600'}`} />
                 <h3 className="font-extrabold text-base text-slate-900">
-                  점주 마케팅 토큰 수동 지급
+                  점주 마케팅 토큰 {adjustMode === 'credit' ? '수동 지급 (+)' : '수동 차감 (-)'}
                 </h3>
               </div>
               <button
@@ -1100,31 +1120,89 @@ export default function AdminPage() {
               </button>
             </div>
 
+            {/* 지급 vs 차감 모드 탭 */}
+            <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-2xl">
+              <button
+                type="button"
+                onClick={() => {
+                  setAdjustMode('credit');
+                  if (tokenReason.includes('차감')) setTokenReason('신규 우수 매장 지원 프로모션');
+                }}
+                className={`py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                  adjustMode === 'credit'
+                    ? 'bg-white text-indigo-700 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <span>➕</span> 토큰 지급 (충전)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAdjustMode('deduct');
+                  if (tokenReason.includes('프로모션')) setTokenReason('오발급 회수 / 수동 정산 차감');
+                }}
+                className={`py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                  adjustMode === 'deduct'
+                    ? 'bg-white text-rose-700 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <span>➖</span> 토큰 차감 (회수)
+              </button>
+            </div>
+
             <form onSubmit={handleAdjustToken} className="space-y-4 text-xs">
               <div>
-                <label className="block text-slate-500 mb-1 font-semibold">지급 대상 점주</label>
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 font-bold text-slate-900">
-                  {selectedUser?.name || '퐁신제빵소 사장님'} ({selectedUser?.email || 'usr_pongshin_master'})
+                <label className="block text-slate-500 mb-1 font-semibold">대상 점주</label>
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 font-bold text-slate-900 flex items-center justify-between">
+                  <span>{selectedUser?.name || '퐁신제빵소 사장님'} ({selectedUser?.email || 'usr_pongshin_master'})</span>
+                  <span className="text-[11px] font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
+                    현재: {Number(selectedUser?.token_balance || 0).toLocaleString()}T
+                  </span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-500 mb-1 font-semibold">지급/차감 토큰 수량 (T)</label>
+                <label className="block text-slate-500 mb-1 font-semibold">
+                  {adjustMode === 'credit' ? '지급할 수량 (T)' : '차감할 수량 (T)'}
+                </label>
                 <input
                   type="number"
+                  min="1"
                   value={tokenAmount}
                   onChange={(e) => setTokenAmount(e.target.value)}
+                  placeholder="예: 10000"
                   className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 font-mono font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                  required
                 />
               </div>
 
+              {/* 실시간 잔액 시뮬레이션 프리뷰 */}
+              {selectedUser && (
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between text-[11px]">
+                  <span className="text-slate-500">반영 후 예상 잔액:</span>
+                  <span className={`font-mono font-bold ${adjustMode === 'credit' ? 'text-indigo-600' : 'text-slate-800'}`}>
+                    {Math.max(
+                      0,
+                      Number(selectedUser.token_balance || 0) +
+                        (adjustMode === 'credit' ? Number(tokenAmount || 0) : -Number(tokenAmount || 0))
+                    ).toLocaleString()}T
+                    <span className="ml-1 text-[10px] text-slate-400">
+                      ({adjustMode === 'credit' ? '+' : '-'}{Number(tokenAmount || 0).toLocaleString()}T)
+                    </span>
+                  </span>
+                </div>
+              )}
+
               <div>
-                <label className="block text-slate-500 mb-1 font-semibold">지급 사유 메모</label>
+                <label className="block text-slate-500 mb-1 font-semibold">조정 사유 메모</label>
                 <input
                   type="text"
                   value={tokenReason}
                   onChange={(e) => setTokenReason(e.target.value)}
                   className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none"
+                  required
                 />
               </div>
 
@@ -1139,9 +1217,17 @@ export default function AdminPage() {
                 <button
                   type="submit"
                   disabled={isAdjusting}
-                  className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition shadow-xs disabled:opacity-50 cursor-pointer"
+                  className={`px-5 py-2.5 rounded-xl text-white font-bold transition shadow-xs disabled:opacity-50 cursor-pointer ${
+                    adjustMode === 'credit'
+                      ? 'bg-indigo-600 hover:bg-indigo-700'
+                      : 'bg-rose-600 hover:bg-rose-700'
+                  }`}
                 >
-                  {isAdjusting ? '처리 중...' : '토큰 즉시 지급'}
+                  {isAdjusting
+                    ? '처리 중...'
+                    : adjustMode === 'credit'
+                    ? '토큰 즉시 지급 (+)'
+                    : '토큰 즉시 차감 (-)'}
                 </button>
               </div>
             </form>

@@ -1,0 +1,14 @@
+{
+  "appId": "com.egdesk.automarketing",
+  "appName": "오토마케팅",
+  "webDir": "out",
+  "server": {
+    "url": "https://tunneling-service.onrender.com/t/mcp-server-fxkud1/p/Auto-Marketing",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": true
+  }
+}

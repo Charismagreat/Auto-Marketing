@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">오토마케팅</string>
+    <string name="title_activity_main">오토마케팅</string>
+    <string name="package_name">com.egdesk.automarketing</string>
+    <string name="custom_url_scheme">com.egdesk.automarketing</string>
+</resources>

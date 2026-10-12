@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { setupDatabase, queryTable, insertRows } from '@/lib/setup-db';
+import { setupDatabase, queryTable, insertRows, deleteRows } from '@/lib/setup-db';
 import { executeSQL } from '@/lib/egdesk-helpers';
 
 export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const businessId = searchParams.get('businessId') || searchParams.get('business_id');
+
     let rows: any[] = [];
     try {
+      const filters: any = {};
+      if (businessId) {
+        filters.business_id = businessId;
+      }
       const result = await queryTable('auto_media', {
+        filters: Object.keys(filters).length > 0 ? filters : undefined,
         limit: 100,
         orderBy: 'created_at',
         orderDirection: 'DESC',
@@ -14,13 +22,14 @@ export async function GET(req: NextRequest) {
       rows = result?.rows || [];
     } catch {
       try {
-        const sqlRes = await executeSQL('SELECT * FROM auto_media ORDER BY created_at DESC LIMIT 100;');
+        const whereClause = businessId ? `WHERE business_id = '${businessId}'` : '';
+        const sqlRes = await executeSQL(`SELECT * FROM auto_media ${whereClause} ORDER BY created_at DESC LIMIT 100;`);
         rows = sqlRes?.rows || [];
       } catch {}
     }
 
-    // 기본 미디어가 비어있을 경우 퐁신제빵소 실물 카스테라 기본 제공
-    if (rows.length === 0) {
+    // 기본 미디어가 비어있을 경우 퐁신제빵소 데모 점포에 한해 기본 샘플 제공
+    if (rows.length === 0 && (!businessId || businessId === 'biz_pongshin_baegot')) {
       rows = [
         {
           id: 'med_pongshin_original',
@@ -55,9 +64,13 @@ export async function GET(req: NextRequest) {
       ];
     }
 
+    const totalBytes = rows.reduce((acc, cur) => acc + (Number(cur.size_bytes) || 0), 0);
+
     return NextResponse.json({
       success: true,
       media: rows,
+      total_bytes: totalBytes,
+      total_count: rows.length,
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -119,7 +132,11 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ success: false, error: '삭제할 미디어 ID가 필요합니다.' }, { status: 400 });
     }
 
-    await executeSQL(`DELETE FROM auto_media WHERE id = '${id}'`);
+    try {
+      await deleteRows('auto_media', { id });
+    } catch {
+      await executeSQL(`DELETE FROM auto_media WHERE id = '${id}'`);
+    }
 
     return NextResponse.json({
       success: true,

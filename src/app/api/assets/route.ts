@@ -4,18 +4,21 @@ import { executeSQL, queryTable, insertRows, deleteRows } from '@/lib/egdesk-hel
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const businessId = searchParams.get('businessId') || 'biz_pongshin_baegot';
+    const businessId = searchParams.get('businessId') || searchParams.get('business_id');
     const type = searchParams.get('type');
 
-    let filter: any = {};
+    const filters: any = {};
+    if (businessId && businessId !== 'all') {
+      filters.business_id = businessId;
+    }
     if (type && type !== 'all') {
-      filter.type = type;
+      filters.type = type;
     }
 
     let assets: any[] = [];
     try {
       const res = await queryTable('auto_assets', {
-        filter,
+        filters: Object.keys(filters).length > 0 ? filters : undefined,
         limit: 100,
         orderBy: 'created_at',
         orderDirection: 'DESC',

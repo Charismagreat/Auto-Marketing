@@ -279,10 +279,13 @@ export default function AdminPage() {
 
         {/* 5대 주요 지표 카드 (시트봇 5대 KPI 카드 스타일) */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1">
-            <div className="flex items-center justify-between text-slate-400">
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1 relative overflow-hidden hover:-translate-y-1 hover:shadow-md transition-all duration-200 group">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-blue-500" />
+            <div className="flex items-center justify-between text-slate-400 pt-1">
               <span className="text-xs font-bold text-slate-500">총 가입 소상공인</span>
-              <Users className="w-4 h-4 text-indigo-600" />
+              <div className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Users className="w-4 h-4" />
+              </div>
             </div>
             <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
               {stats?.totalUsers || 1}
@@ -293,10 +296,13 @@ export default function AdminPage() {
             </div>
           </div>
 
-          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1">
-            <div className="flex items-center justify-between text-slate-400">
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1 relative overflow-hidden hover:-translate-y-1 hover:shadow-md transition-all duration-200 group">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500" />
+            <div className="flex items-center justify-between text-slate-400 pt-1">
               <span className="text-xs font-bold text-slate-500">등록 매장 &amp; 상품</span>
-              <Store className="w-4 h-4 text-purple-600" />
+              <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Store className="w-4 h-4" />
+              </div>
             </div>
             <div className="text-xl sm:text-2xl font-black text-purple-700 font-mono">
               {stats?.totalBusinesses || 1}
@@ -307,10 +313,13 @@ export default function AdminPage() {
             </div>
           </div>
 
-          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1">
-            <div className="flex items-center justify-between text-slate-400">
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1 relative overflow-hidden hover:-translate-y-1 hover:shadow-md transition-all duration-200 group">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
+            <div className="flex items-center justify-between text-slate-400 pt-1">
               <span className="text-xs font-bold text-slate-500">생성된 마케팅 에셋</span>
-              <FileCheck className="w-4 h-4 text-emerald-600" />
+              <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <FileCheck className="w-4 h-4" />
+              </div>
             </div>
             <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
               {stats?.totalAssetsGenerated || 24}
@@ -321,10 +330,13 @@ export default function AdminPage() {
             </div>
           </div>
 
-          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1">
-            <div className="flex items-center justify-between text-slate-400">
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1 relative overflow-hidden hover:-translate-y-1 hover:shadow-md transition-all duration-200 group">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500" />
+            <div className="flex items-center justify-between text-slate-400 pt-1">
               <span className="text-xs font-bold text-slate-500">오토파일럿 발행 큐</span>
-              <Calendar className="w-4 h-4 text-amber-500" />
+              <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Calendar className="w-4 h-4" />
+              </div>
             </div>
             <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
               {stats?.totalCampaigns || 6}
@@ -335,10 +347,13 @@ export default function AdminPage() {
             </div>
           </div>
 
-          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1 col-span-2 md:col-span-1">
-            <div className="flex items-center justify-between text-slate-400">
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1 col-span-2 md:col-span-1 relative overflow-hidden hover:-translate-y-1 hover:shadow-md transition-all duration-200 group">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-amber-500" />
+            <div className="flex items-center justify-between text-slate-400 pt-1">
               <span className="text-xs font-bold text-slate-500">유통 토큰 잔액</span>
-              <Wallet className="w-4 h-4 text-indigo-600" />
+              <div className="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Wallet className="w-4 h-4" />
+              </div>
             </div>
             <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
               {(stats?.totalTokenBalance || 50000).toLocaleString()}

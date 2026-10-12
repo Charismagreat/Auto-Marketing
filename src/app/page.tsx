@@ -449,77 +449,143 @@ export default function DashboardPage() {
             <span className="text-xs text-slate-500">대화형 핀셋 수정 지원</span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             {/* 1. Code-as-Video */}
             <a
               href="/studio/video"
-              className="flex flex-col items-start p-4 rounded-xl bg-white border border-slate-200 hover:border-indigo-400 hover:shadow-md transition text-left group"
+              className="flex flex-col justify-between p-4 rounded-2xl bg-white border border-slate-200 hover:border-indigo-400 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 text-left group relative overflow-hidden"
             >
-              <div className="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2.5 group-hover:scale-110 transition">
-                <Video className="w-5 h-5" />
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-2xs">
+                    <Video className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700">15초 릴스</span>
+                </div>
+                <div>
+                  <span className="text-xs font-black text-slate-900 block group-hover:text-indigo-600 transition-colors">숏폼 광고 영상</span>
+                  <span className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">사진 1장 ➔ Remotion</span>
+                </div>
               </div>
-              <span className="text-xs font-bold text-slate-900">숏폼 광고 영상</span>
-              <span className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">사진 1장 ➔ Remotion</span>
+              <div className="pt-2 flex items-center text-[11px] font-bold text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span>제작하기</span>
+                <ArrowRight className="w-3 h-3 ml-0.5" />
+              </div>
             </a>
 
             {/* 2. 촬영 영상 AI 편집 */}
             <a
               href="/studio/video"
-              className="flex flex-col items-start p-4 rounded-xl bg-white border border-slate-200 hover:border-rose-400 hover:shadow-md transition text-left group"
+              className="flex flex-col justify-between p-4 rounded-2xl bg-white border border-slate-200 hover:border-rose-400 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 text-left group relative overflow-hidden"
             >
-              <div className="w-9 h-9 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center mb-2.5 group-hover:scale-110 transition">
-                <Film className="w-5 h-5" />
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-rose-600 group-hover:text-white transition-all shadow-2xs">
+                    <Film className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-700">무음컷팅</span>
+                </div>
+                <div>
+                  <span className="text-xs font-black text-slate-900 block group-hover:text-rose-600 transition-colors">촬영 영상 컷편집</span>
+                  <span className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">무음절단 + 자막/더빙</span>
+                </div>
               </div>
-              <span className="text-xs font-bold text-slate-900">촬영 영상 컷편집</span>
-              <span className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">무음절단 + 자막/더빙</span>
+              <div className="pt-2 flex items-center text-[11px] font-bold text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span>편집하기</span>
+                <ArrowRight className="w-3 h-3 ml-0.5" />
+              </div>
             </a>
 
             {/* 3. Code-as-Image */}
             <a
               href="/studio/social"
-              className="flex flex-col items-start p-4 rounded-xl bg-white border border-slate-200 hover:border-amber-400 hover:shadow-md transition text-left group"
+              className="flex flex-col justify-between p-4 rounded-2xl bg-white border border-slate-200 hover:border-amber-400 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 text-left group relative overflow-hidden"
             >
-              <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center mb-2.5 group-hover:scale-110 transition">
-                <ImageIcon className="w-5 h-5" />
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-amber-600 group-hover:text-white transition-all shadow-2xs">
+                    <ImageIcon className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700">6컷 벡터</span>
+                </div>
+                <div>
+                  <span className="text-xs font-black text-slate-900 block group-hover:text-amber-600 transition-colors">카드뉴스 / 썸네일</span>
+                  <span className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">1:1 & 16:9 한글 벡터</span>
+                </div>
               </div>
-              <span className="text-xs font-bold text-slate-900">카드뉴스 / 썸네일</span>
-              <span className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">1:1 & 16:9 한글 벡터</span>
+              <div className="pt-2 flex items-center text-[11px] font-bold text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span>디자인하기</span>
+                <ArrowRight className="w-3 h-3 ml-0.5" />
+              </div>
             </a>
 
             {/* 4. Code-as-Post */}
             <a
               href="/studio/social"
-              className="flex flex-col items-start p-4 rounded-xl bg-white border border-slate-200 hover:border-emerald-400 hover:shadow-md transition text-left group"
+              className="flex flex-col justify-between p-4 rounded-2xl bg-white border border-slate-200 hover:border-emerald-400 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 text-left group relative overflow-hidden"
             >
-              <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mb-2.5 group-hover:scale-110 transition">
-                <FileText className="w-5 h-5" />
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-2xs">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700">SEO 원고</span>
+                </div>
+                <div>
+                  <span className="text-xs font-black text-slate-900 block group-hover:text-emerald-600 transition-colors">블로그 / SNS 글</span>
+                  <span className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">SEO 롱폼 + 에셋 배치</span>
+                </div>
               </div>
-              <span className="text-xs font-bold text-slate-900">블로그 / SNS 글</span>
-              <span className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">SEO 롱폼 + 에셋 배치</span>
+              <div className="pt-2 flex items-center text-[11px] font-bold text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span>원고작성</span>
+                <ArrowRight className="w-3 h-3 ml-0.5" />
+              </div>
             </a>
 
             {/* 5. Code-as-DetailPage */}
             <a
               href="/studio/detail"
-              className="flex flex-col items-start p-4 rounded-xl bg-white border border-slate-200 hover:border-purple-400 hover:shadow-md transition text-left group"
+              className="flex flex-col justify-between p-4 rounded-2xl bg-white border border-slate-200 hover:border-purple-400 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 text-left group relative overflow-hidden"
             >
-              <div className="w-9 h-9 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center mb-2.5 group-hover:scale-110 transition">
-                <ShoppingBag className="w-5 h-5" />
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-purple-600 group-hover:text-white transition-all shadow-2xs">
+                    <ShoppingBag className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-purple-50 text-purple-700">860px 표준</span>
+                </div>
+                <div>
+                  <span className="text-xs font-black text-slate-900 block group-hover:text-purple-600 transition-colors">상품 상세페이지</span>
+                  <span className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">스마트스토어 860px</span>
+                </div>
               </div>
-              <span className="text-xs font-bold text-slate-900">상품 상세페이지</span>
-              <span className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">스마트스토어 860px</span>
+              <div className="pt-2 flex items-center text-[11px] font-bold text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span>페이지제작</span>
+                <ArrowRight className="w-3 h-3 ml-0.5" />
+              </div>
             </a>
 
             {/* 6. Code-as-Print */}
             <a
               href="/studio/print"
-              className="flex flex-col items-start p-4 rounded-xl bg-white border border-slate-200 hover:border-blue-400 hover:shadow-md transition text-left group"
+              className="flex flex-col justify-between p-4 rounded-2xl bg-white border border-slate-200 hover:border-blue-400 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 text-left group relative overflow-hidden"
             >
-              <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-2.5 group-hover:scale-110 transition">
-                <Printer className="w-5 h-5" />
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-2xs">
+                    <Printer className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700">300 DPI</span>
+                </div>
+                <div>
+                  <span className="text-xs font-black text-slate-900 block group-hover:text-blue-600 transition-colors">명함 / 전단 / 배너</span>
+                  <span className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">인쇄소 규격 PDF</span>
+                </div>
               </div>
-              <span className="text-xs font-bold text-slate-900">명함 / 전단지 / 배너</span>
-              <span className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">300 DPI 인쇄소 직통</span>
+              <div className="pt-2 flex items-center text-[11px] font-bold text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span>인쇄물제작</span>
+                <ArrowRight className="w-3 h-3 ml-0.5" />
+              </div>
             </a>
           </div>
 
@@ -585,55 +651,85 @@ export default function DashboardPage() {
           </div>
 
           {/* AI 추천 베이커리 1위 레퍼런스 카드 3선 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
-            <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:border-indigo-300 transition text-xs space-y-2">
-              <div className="flex items-center justify-between text-slate-500">
-                <span className="font-semibold text-rose-600">📸 인스타 릴스 (조회수 120만)</span>
-                <span>카스테라 쪼개기</span>
-              </div>
-              <p className="font-bold text-slate-800 line-clamp-1">"자르자마자 튀어나오는 크림 폭탄 씬"</p>
-              <div className="text-[11px] text-slate-500 line-clamp-2">
-                후킹: "이게 진짜 카스테라라고?" ➔ 1.2초 빠른 컷 ➔ 가라오케 자막 ➔ 당일 한정 특가 안내.
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-1">
+            {/* 1. 릴스 레퍼런스 */}
+            <div className="p-4 rounded-2xl border border-slate-200 bg-white hover:border-rose-400 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 text-xs flex flex-col justify-between space-y-3 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-pink-500" />
+              <div className="space-y-2 pt-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-extrabold text-[11px] px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200/60">
+                    📸 인스타 릴스 (120만뷰)
+                  </span>
+                  <span className="text-[11px] font-bold text-slate-400 font-mono">바이럴 98점</span>
+                </div>
+                <p className="font-extrabold text-sm text-slate-900 group-hover:text-rose-600 transition-colors">
+                  "자르자마자 튀어나오는 크림 폭탄 씬"
+                </p>
+                <div className="text-[11px] text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100 leading-relaxed space-y-1">
+                  <div><strong className="text-rose-700">후킹:</strong> "이게 진짜 카스테라라고?" (1.2초 빠른 컷)</div>
+                  <div><strong className="text-slate-700">전환:</strong> 퐁신 텍스처 극대화 ➔ 당일 한정 수량 쿠폰</div>
+                </div>
               </div>
               <a
                 href="/studio/video"
-                className="block text-center w-full py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-indigo-50 hover:text-indigo-700 font-semibold transition text-slate-700 text-[11px]"
+                className="w-full py-2 rounded-xl bg-slate-900 hover:bg-rose-600 text-white font-bold transition-all text-[11px] flex items-center justify-center gap-1.5 shadow-xs"
               >
-                이 DNA로 숏폼 영상 생성 ➔
+                <span>이 DNA로 숏폼 영상 생성</span>
+                <ArrowRight className="w-3 h-3" />
               </a>
             </div>
 
-            <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:border-indigo-300 transition text-xs space-y-2">
-              <div className="flex items-center justify-between text-slate-500">
-                <span className="font-semibold text-purple-600">🛍️ 스마트스토어 1위</span>
-                <span>선물세트 상세페이지</span>
-              </div>
-              <p className="font-bold text-slate-800 line-clamp-1">"아침에 구워 당일 출발! 퐁신 보증제"</p>
-              <div className="text-[11px] text-slate-500 line-clamp-2">
-                860px 표준 규격 ➔ 무항생제 계란 42% 함유 증명 ➔ 안심 에어팩 포장 ➔ 리뷰 4.9점.
+            {/* 2. 상세페이지 레퍼런스 */}
+            <div className="p-4 rounded-2xl border border-slate-200 bg-white hover:border-purple-400 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 text-xs flex flex-col justify-between space-y-3 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-indigo-500" />
+              <div className="space-y-2 pt-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-extrabold text-[11px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200/60">
+                    🛍️ 스마트스토어 1위
+                  </span>
+                  <span className="text-[11px] font-bold text-slate-400 font-mono">전환율 8.4%</span>
+                </div>
+                <p className="font-extrabold text-sm text-slate-900 group-hover:text-purple-600 transition-colors">
+                  "아침에 구워 당일 출발! 퐁신 보증제"
+                </p>
+                <div className="text-[11px] text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100 leading-relaxed space-y-1">
+                  <div><strong className="text-purple-700">규격:</strong> 860px 표준 ➔ 무항생제 계란 42% 함유 증명</div>
+                  <div><strong className="text-slate-700">신뢰:</strong> 안심 에어팩 포장 ➔ 실구매 리뷰 4.9점 증거</div>
+                </div>
               </div>
               <a
                 href="/studio/detail"
-                className="block text-center w-full py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-indigo-50 hover:text-indigo-700 font-semibold transition text-slate-700 text-[11px]"
+                className="w-full py-2 rounded-xl bg-slate-900 hover:bg-purple-600 text-white font-bold transition-all text-[11px] flex items-center justify-center gap-1.5 shadow-xs"
               >
-                이 구조로 상세페이지 생성 ➔
+                <span>이 구조로 상세페이지 생성</span>
+                <ArrowRight className="w-3 h-3" />
               </a>
             </div>
 
-            <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:border-indigo-300 transition text-xs space-y-2">
-              <div className="flex items-center justify-between text-slate-500">
-                <span className="font-semibold text-emerald-600">🏷️ 오픈 전단지 & X배너</span>
-                <span>선착순 1,000원 쿠폰</span>
-              </div>
-              <p className="font-bold text-slate-800 line-clamp-1">"입간판 보고 들어온 손님 40% 증가"</p>
-              <div className="text-[11px] text-slate-500 line-clamp-2">
-                300 DPI 규격 ➔ 갓 구운 시간표 노출 ➔ 절취선 1,000원 할인 쿠폰 ➔ 네이버 플레이스 QR.
+            {/* 3. 오픈 전단지 레퍼런스 */}
+            <div className="p-4 rounded-2xl border border-slate-200 bg-white hover:border-emerald-400 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 text-xs flex flex-col justify-between space-y-3 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
+              <div className="space-y-2 pt-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-extrabold text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                    🏷️ 오픈 전단 & X배너
+                  </span>
+                  <span className="text-[11px] font-bold text-slate-400 font-mono">방문율 +40%</span>
+                </div>
+                <p className="font-extrabold text-sm text-slate-900 group-hover:text-emerald-600 transition-colors">
+                  "입간판 보고 들어온 손님 40% 증가"
+                </p>
+                <div className="text-[11px] text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100 leading-relaxed space-y-1">
+                  <div><strong className="text-emerald-700">시선:</strong> 갓 구운 시간표 노출 ➔ 절취선 1,000원 쿠폰</div>
+                  <div><strong className="text-slate-700">규격:</strong> 300 DPI 상업 인쇄 ➔ 네이버 플레이스 QR</div>
+                </div>
               </div>
               <a
                 href="/studio/print"
-                className="block text-center w-full py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-indigo-50 hover:text-indigo-700 font-semibold transition text-slate-700 text-[11px]"
+                className="w-full py-2 rounded-xl bg-slate-900 hover:bg-emerald-600 text-white font-bold transition-all text-[11px] flex items-center justify-center gap-1.5 shadow-xs"
               >
-                이 규격으로 전단지/배너 생성 ➔
+                <span>이 규격으로 전단/배너 생성</span>
+                <ArrowRight className="w-3 h-3" />
               </a>
             </div>
           </div>

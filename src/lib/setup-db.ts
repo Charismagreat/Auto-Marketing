@@ -89,7 +89,7 @@ async function seedInitialData() {
       }
     ]).catch(console.error);
   } else {
-    await executeSQL(`UPDATE auto_users SET email = 'guest@automarketing.com' WHERE id = 'usr_pongshin_master' OR email = 'pongshin.bakery@gmail.com'`).catch(() => {});
+    await updateRows('auto_users', { email: 'guest@automarketing.com' }, { filters: { id: 'usr_pongshin_master' } }).catch(() => {});
   }
 
   // 2. 비즈니스 프로필 (퐁신제빵소)

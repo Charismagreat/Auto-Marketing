@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { executeSQL, queryTable, insertRows } from '@/lib/egdesk-helpers';
+import { queryTable, insertRows, updateRows } from '@/lib/egdesk-helpers';
 
 export async function POST(req: Request) {
   try {
@@ -57,11 +57,17 @@ export async function POST(req: Request) {
 
     // 3. 토큰 지급 확인
     try {
-      await executeSQL(`
-        UPDATE auto_users 
-        SET token_balance = COALESCE(token_balance, 0) + 50000 
-        WHERE id = '${user_id}'
-      `);
+      const uRes = await queryTable('auto_users', { filters: { id: user_id }, limit: 1 }).catch(() => ({ rows: [] }));
+      const user = uRes.rows?.[0];
+      if (user) {
+        const curBal = Number(user.token_balance || 0);
+        await updateRows('auto_users', {
+          token_balance: curBal + 50000,
+          updated_at: new Date().toISOString(),
+        }, {
+          filters: { id: user_id },
+        });
+      }
     } catch (e) {
       console.warn('User token update error:', e);
     }

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { setupDatabase, queryTable } from '@/lib/setup-db';
-import { executeSQL } from '@/lib/egdesk-helpers';
+import { setupDatabase, queryTable, updateRows } from '@/lib/setup-db';
 
 export interface TaxInvoice {
   id: string;
@@ -78,9 +77,12 @@ export async function POST(req: Request) {
 
     if (action === 'approve') {
       const ntsApprovalNumber = `20261012-41000284-${Math.floor(10000000 + Math.random() * 90000000)}`;
-      await executeSQL(
-        `UPDATE auto_tax_invoices SET status = 'APPROVED', nts_approval_number = '${ntsApprovalNumber}' WHERE id = '${invoiceId}';`
-      );
+      await updateRows('auto_tax_invoices', {
+        status: 'APPROVED',
+        nts_approval_number: ntsApprovalNumber,
+      }, {
+        filters: { id: invoiceId },
+      });
 
       return NextResponse.json({
         success: true,

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { setupDatabase, queryTable } from '@/lib/setup-db';
-import { executeSQL } from '@/lib/egdesk-helpers';
+import { setupDatabase, queryTable, updateRows } from '@/lib/setup-db';
 
 export interface SnsChannel {
   id: string;
@@ -118,32 +117,30 @@ export async function PUT(req: Request) {
 
     const escape = (str?: string) => (str || '').replace(/'/g, "''");
 
-    const sets: string[] = [];
-    if (body.companyName !== undefined) sets.push(`company_name = '${escape(body.companyName)}'`);
-    if (body.ceoName !== undefined) sets.push(`ceo_name = '${escape(body.ceoName)}'`);
-    if (body.bizNumber !== undefined) sets.push(`biz_number = '${escape(body.bizNumber)}'`);
-    if (body.mailOrderNumber !== undefined) sets.push(`mail_order_number = '${escape(body.mailOrderNumber)}'`);
-    if (body.address !== undefined) sets.push(`address = '${escape(body.address)}'`);
-    if (body.tel !== undefined) sets.push(`tel = '${escape(body.tel)}'`);
-    if (body.email !== undefined) sets.push(`email = '${escape(body.email)}'`);
-    if (body.hostingProvider !== undefined) sets.push(`hosting_provider = '${escape(body.hostingProvider)}'`);
-    if (body.privacyManager !== undefined) sets.push(`privacy_manager = '${escape(body.privacyManager)}'`);
-    if (body.copyrightText !== undefined) sets.push(`copyright_text = '${escape(body.copyrightText)}'`);
-    if (body.depositBankName !== undefined) sets.push(`deposit_bank_name = '${escape(body.depositBankName)}'`);
-    if (body.depositAccountNumber !== undefined) sets.push(`deposit_account_number = '${escape(body.depositAccountNumber)}'`);
-    if (body.depositAccountHolder !== undefined) sets.push(`deposit_account_holder = '${escape(body.depositAccountHolder)}'`);
+    const updates: Record<string, any> = { updated_at: now };
+    if (body.companyName !== undefined) updates.company_name = body.companyName;
+    if (body.ceoName !== undefined) updates.ceo_name = body.ceoName;
+    if (body.bizNumber !== undefined) updates.biz_number = body.bizNumber;
+    if (body.mailOrderNumber !== undefined) updates.mail_order_number = body.mailOrderNumber;
+    if (body.address !== undefined) updates.address = body.address;
+    if (body.tel !== undefined) updates.tel = body.tel;
+    if (body.email !== undefined) updates.email = body.email;
+    if (body.hostingProvider !== undefined) updates.hosting_provider = body.hostingProvider;
+    if (body.privacyManager !== undefined) updates.privacy_manager = body.privacyManager;
+    if (body.copyrightText !== undefined) updates.copyright_text = body.copyrightText;
+    if (body.depositBankName !== undefined) updates.deposit_bank_name = body.depositBankName;
+    if (body.depositAccountNumber !== undefined) updates.deposit_account_number = body.depositAccountNumber;
+    if (body.depositAccountHolder !== undefined) updates.deposit_account_holder = body.depositAccountHolder;
     if (body.sns_channels !== undefined) {
-      const snsJson = JSON.stringify(body.sns_channels);
-      sets.push(`sns_channels = '${escape(snsJson)}'`);
+      updates.sns_channels = JSON.stringify(body.sns_channels);
     }
-    if (body.termsOfService !== undefined) sets.push(`terms_of_service = '${escape(body.termsOfService)}'`);
-    if (body.privacyPolicy !== undefined) sets.push(`privacy_policy = '${escape(body.privacyPolicy)}'`);
-    if (body.refundPolicy !== undefined) sets.push(`refund_policy = '${escape(body.refundPolicy)}'`);
-    sets.push(`updated_at = '${now}'`);
+    if (body.termsOfService !== undefined) updates.terms_of_service = body.termsOfService;
+    if (body.privacyPolicy !== undefined) updates.privacy_policy = body.privacyPolicy;
+    if (body.refundPolicy !== undefined) updates.refund_policy = body.refundPolicy;
 
-    if (sets.length > 0) {
-      await executeSQL(`UPDATE auto_footer_configs SET ${sets.join(', ')} WHERE id = 'default_footer';`);
-    }
+    await updateRows('auto_footer_configs', updates, {
+      filters: { id: 'default_footer' },
+    });
 
     return NextResponse.json({
       success: true,
@@ -156,3 +153,5 @@ export async function PUT(req: Request) {
     );
   }
 }
+
+export const POST = PUT;

@@ -1,4 +1,4 @@
-import { callPhoneTool, queryTable, executeSQL } from './egdesk-helpers';
+import { callPhoneTool, queryTable, executeSQL, updateRows, insertRows } from './egdesk-helpers';
 import { parseBankDepositSms } from './bank-sms-parser';
 import { creditTokens } from './token-wallet';
 import { depositEvents } from './deposit-events';
@@ -161,23 +161,36 @@ export async function syncAndMatchBankDepositFromPhone(targetRequestId?: string)
               );
 
               // 2. 세션 상태 COMPLETED 업데이트
-              const escapedRawSms = body.replace(/'/g, "''");
-              await executeSQL(`
-                UPDATE auto_deposit_requests 
-                SET status = 'COMPLETED',
-                    actual_amount_krw = ${reqAmount},
-                    raw_sms = '${escapedRawSms}',
-                    matched_at = '${now}',
-                    updated_at = '${now}',
-                    updated_by = 'agent_m_sync'
-                WHERE id = '${req.id}';
-              `);
+              await updateRows('auto_deposit_requests', {
+                status: 'COMPLETED',
+                actual_amount_krw: reqAmount,
+                raw_sms: body,
+                matched_at: now,
+                updated_at: now,
+                updated_by: 'agent_m_sync',
+              }, {
+                filters: { id: req.id },
+              });
 
               // 3. 전자세금계산서 대장에 입금 건 자동 발행 요청 연동
-              await executeSQL(`
-                INSERT INTO auto_tax_invoices (id, invoice_no, recipient_name, store_name, biz_number, supply_amount, vat_amount, total_amount, item_name, status, issue_date, created_at)
-                VALUES ('inv_${Date.now()}', 'INV-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}', '${req.depositor_name || req.user_name}', '${req.user_name}', '123-86-09876', ${Math.round(reqAmount / 1.1)}, ${reqAmount - Math.round(reqAmount / 1.1)}, ${reqAmount}, '${req.package_name}', 'ISSUED', '${now.slice(0, 10)}', '${now}')
-              `).catch(() => {});
+              try {
+                await insertRows('auto_tax_invoices', [{
+                  id: `inv_${Date.now()}`,
+                  invoice_no: `INV-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+                  recipient_name: req.depositor_name || req.user_name,
+                  store_name: req.user_name,
+                  biz_number: '123-86-09876',
+                  supply_amount: Math.round(reqAmount / 1.1),
+                  vat_amount: reqAmount - Math.round(reqAmount / 1.1),
+                  total_amount: reqAmount,
+                  item_name: req.package_name,
+                  status: 'ISSUED',
+                  issue_date: now.slice(0, 10),
+                  created_at: now,
+                }]);
+              } catch (invErr) {
+                console.warn('Tax invoice insert error:', invErr);
+              }
 
               // 4. 실시간 웹 이벤트 브로드캐스트
               depositEvents.notify({

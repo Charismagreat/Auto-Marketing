@@ -132,11 +132,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ success: false, error: '삭제할 미디어 ID가 필요합니다.' }, { status: 400 });
     }
 
-    try {
-      await deleteRows('auto_media', { id });
-    } catch {
-      await executeSQL(`DELETE FROM auto_media WHERE id = '${id}'`);
-    }
+    await deleteRows('auto_media', { filters: { id } });
 
     return NextResponse.json({
       success: true,

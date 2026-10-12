@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { setupDatabase, queryTable, insertRows } from '@/lib/setup-db';
-import { executeSQL } from '@/lib/egdesk-helpers';
+import { setupDatabase, queryTable, insertRows, updateRows, deleteRows } from '@/lib/setup-db';
 
 export interface SmartRule {
   id: string;
@@ -56,9 +55,11 @@ export async function POST(req: Request) {
 
     // 1. 활성/비활성 토글
     if (action === 'toggle' && ruleId) {
-      await executeSQL(
-        `UPDATE auto_smart_rules SET is_active = CASE WHEN is_active = 1 THEN 0 ELSE 1 END WHERE id = '${ruleId}';`
-      );
+      const existing = await queryTable('auto_smart_rules', { filters: { id: ruleId }, limit: 1 }).catch(() => ({ rows: [] }));
+      const rule = existing.rows?.[0];
+      const newActive = Number(rule?.is_active || 0) === 1 ? 0 : 1;
+
+      await updateRows('auto_smart_rules', { is_active: newActive }, { filters: { id: ruleId } });
 
       return NextResponse.json({
         success: true,
@@ -68,10 +69,17 @@ export async function POST(req: Request) {
 
     // 2. 즉시 1회 실행(Run Now)
     if (action === 'run_now' && ruleId) {
+      const existing = await queryTable('auto_smart_rules', { filters: { id: ruleId }, limit: 1 }).catch(() => ({ rows: [] }));
+      const rule = existing.rows?.[0];
+      const newCount = Number(rule?.total_triggered_count || 0) + 1;
       const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
-      await executeSQL(
-        `UPDATE auto_smart_rules SET total_triggered_count = total_triggered_count + 1, last_triggered_at = '${now}' WHERE id = '${ruleId}';`
-      );
+
+      await updateRows('auto_smart_rules', {
+        total_triggered_count: newCount,
+        last_triggered_at: now,
+      }, {
+        filters: { id: ruleId },
+      });
 
       return NextResponse.json({
         success: true,
@@ -121,7 +129,7 @@ export async function DELETE(req: Request) {
     const ruleId = searchParams.get('id');
 
     if (ruleId) {
-      await executeSQL(`DELETE FROM auto_smart_rules WHERE id = '${ruleId}';`);
+      await deleteRows('auto_smart_rules', { filters: { id: ruleId } });
       return NextResponse.json({ success: true, message: '규칙이 DB에서 영구 삭제되었습니다.' });
     }
 

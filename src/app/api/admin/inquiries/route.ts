@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { setupDatabase, queryTable, insertRows } from '@/lib/setup-db';
-import { executeSQL } from '@/lib/egdesk-helpers';
+import { setupDatabase, queryTable, insertRows, updateRows } from '@/lib/setup-db';
 
 export interface Inquiry {
   id: string;
@@ -154,12 +153,14 @@ export async function POST(req: Request) {
       ]);
 
       const updatedStatus = newStatus || 'RESOLVED';
-      const safeNote = (internalNote !== undefined ? internalNote : '').replace(/'/g, "''");
-      const noteSql = internalNote !== undefined ? `, internal_note = '${safeNote}'` : '';
+      const updates: Record<string, any> = { status: updatedStatus };
+      if (internalNote !== undefined) {
+        updates.internal_note = internalNote;
+      }
 
-      await executeSQL(
-        `UPDATE auto_inquiries SET status = '${updatedStatus}'${noteSql} WHERE id = '${inquiryId}';`
-      );
+      await updateRows('auto_inquiries', updates, {
+        filters: { id: inquiryId },
+      });
 
       return NextResponse.json({
         success: true,
@@ -169,12 +170,14 @@ export async function POST(req: Request) {
 
     // 3. 상태 또는 내부 메모 변경
     if (action === 'update_status' && inquiryId) {
-      const sets: string[] = [];
-      if (newStatus) sets.push(`status = '${newStatus}'`);
-      if (internalNote !== undefined) sets.push(`internal_note = '${internalNote.replace(/'/g, "''")}'`);
+      const updates: Record<string, any> = {};
+      if (newStatus) updates.status = newStatus;
+      if (internalNote !== undefined) updates.internal_note = internalNote;
 
-      if (sets.length > 0) {
-        await executeSQL(`UPDATE auto_inquiries SET ${sets.join(', ')} WHERE id = '${inquiryId}';`);
+      if (Object.keys(updates).length > 0) {
+        await updateRows('auto_inquiries', updates, {
+          filters: { id: inquiryId },
+        });
       }
 
       return NextResponse.json({

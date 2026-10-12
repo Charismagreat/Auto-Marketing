@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { TOKEN_PACKAGES, creditTokens } from '@/lib/token-wallet';
-import { setupDatabase, executeSQL, insertRows } from '@/lib/setup-db';
+import { setupDatabase, executeSQL, insertRows, updateRows } from '@/lib/setup-db';
 import { syncAndMatchBankDepositFromPhone } from '@/lib/phone-bank-sync';
 import { depositEvents } from '@/lib/deposit-events';
 
@@ -136,23 +136,28 @@ export async function POST(request: Request) {
     // 신규 생성 직후 백그라운드 폰 동기화 1회 즉시 호출
     syncAndMatchBankDepositFromPhone(requestId).catch(() => {});
 
+    const depositData = {
+      requestId,
+      id: requestId,
+      depositCode,
+      depositorName: cleanDepositorName,
+      packageId: pkg.id,
+      packageName: pkg.name,
+      tokensToCredit: pkg.tokens,
+      originalAmountKrw: pkg.priceKrw,
+      discountKrw,
+      amountKrw: finalAmountKrw,
+      bankName: bankInfo.bankName,
+      accountNumber: bankInfo.accountNumber,
+      accountHolder: bankInfo.accountHolder,
+      expiresAt,
+    };
+
     return NextResponse.json({
       success: true,
-      deposit: {
-        requestId,
-        depositCode,
-        depositorName: cleanDepositorName,
-        packageId: pkg.id,
-        packageName: pkg.name,
-        tokensToCredit: pkg.tokens,
-        originalAmountKrw: pkg.priceKrw,
-        discountKrw,
-        amountKrw: finalAmountKrw,
-        bankName: bankInfo.bankName,
-        accountNumber: bankInfo.accountNumber,
-        accountHolder: bankInfo.accountHolder,
-        expiresAt,
-      },
+      requestId,
+      deposit: depositData,
+      depositRequest: depositData,
     });
   } catch (err: any) {
     console.error('[DirectDeposit POST] Error:', err);
@@ -190,21 +195,35 @@ export async function PATCH(request: Request) {
       );
 
       // 2. 상태 COMPLETED 변경
-      await executeSQL(`
-        UPDATE auto_deposit_requests 
-        SET status = 'COMPLETED',
-            actual_amount_krw = ${req.amount_krw},
-            matched_at = '${now}',
-            updated_at = '${now}',
-            updated_by = 'admin_manual'
-        WHERE id = '${requestId}';
-      `);
+      await updateRows('auto_deposit_requests', {
+        status: 'COMPLETED',
+        actual_amount_krw: req.amount_krw,
+        matched_at: now,
+        updated_at: now,
+        updated_by: 'admin_manual',
+      }, {
+        filters: { id: requestId },
+      });
 
       // 3. 전자세금계산서 대장에 발행 내역 자동 기록
-      await executeSQL(`
-        INSERT INTO auto_tax_invoices (id, invoice_no, recipient_name, store_name, biz_number, supply_amount, vat_amount, total_amount, item_name, status, issue_date, created_at)
-        VALUES ('inv_${Date.now()}', 'INV-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}', '${req.depositor_name || req.user_name}', '${req.user_name}', '123-86-09876', ${Math.round(req.amount_krw / 1.1)}, ${req.amount_krw - Math.round(req.amount_krw / 1.1)}, ${req.amount_krw}, '${req.package_name}', 'ISSUED', '${now.slice(0, 10)}', '${now}')
-      `).catch(() => {});
+      try {
+        await insertRows('auto_tax_invoices', [{
+          id: `inv_${Date.now()}`,
+          invoice_no: `INV-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+          recipient_name: req.depositor_name || req.user_name,
+          store_name: req.user_name,
+          biz_number: '123-86-09876',
+          supply_amount: Math.round(req.amount_krw / 1.1),
+          vat_amount: req.amount_krw - Math.round(req.amount_krw / 1.1),
+          total_amount: req.amount_krw,
+          item_name: req.package_name,
+          status: 'ISSUED',
+          issue_date: now.slice(0, 10),
+          created_at: now,
+        }]);
+      } catch (invErr) {
+        console.warn('Tax invoice insert error:', invErr);
+      }
 
       depositEvents.notify({
         type: 'DEPOSIT_COMPLETED',
@@ -219,25 +238,25 @@ export async function PATCH(request: Request) {
     }
 
     if (action === 'HOLD') {
-      await executeSQL(`
-        UPDATE auto_deposit_requests 
-        SET status = 'HOLD',
-            hold_reason = '${(holdReason || '관리자 수동 보류').replace(/'/g, "''")}',
-            updated_at = '${now}',
-            updated_by = 'admin_manual'
-        WHERE id = '${requestId}';
-      `);
+      await updateRows('auto_deposit_requests', {
+        status: 'HOLD',
+        hold_reason: holdReason || '관리자 수동 보류',
+        updated_at: now,
+        updated_by: 'admin_manual',
+      }, {
+        filters: { id: requestId },
+      });
       return NextResponse.json({ success: true, message: '입금 보류 처리되었습니다.' });
     }
 
     if (action === 'CANCEL') {
-      await executeSQL(`
-        UPDATE auto_deposit_requests 
-        SET status = 'CANCELLED',
-            updated_at = '${now}',
-            updated_by = 'admin_manual'
-        WHERE id = '${requestId}';
-      `);
+      await updateRows('auto_deposit_requests', {
+        status: 'CANCELLED',
+        updated_at: now,
+        updated_by: 'admin_manual',
+      }, {
+        filters: { id: requestId },
+      });
       return NextResponse.json({ success: true, message: '입금 요청이 취소되었습니다.' });
     }
 
@@ -246,3 +265,5 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
+
+export const PUT = PATCH;

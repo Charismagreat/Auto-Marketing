@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { executeSQL, queryTable, insertRows, deleteRows } from '@/lib/egdesk-helpers';
+import { queryTable, insertRows, updateRows, deleteRows } from '@/lib/egdesk-helpers';
 
 export async function GET(req: Request) {
   try {
@@ -78,14 +78,18 @@ export async function POST(req: Request) {
 
     // 2. auto_users 토큰 차감
     try {
-      await executeSQL(`
-        UPDATE auto_users 
-        SET token_balance = CASE 
-          WHEN COALESCE(token_balance, 0) >= ${costTokens} THEN token_balance - ${costTokens}
-          ELSE 0 
-        END 
-        WHERE id = '${userId}'
-      `);
+      const uRes = await queryTable('auto_users', { filters: { id: userId }, limit: 1 }).catch(() => ({ rows: [] }));
+      const user = uRes.rows?.[0];
+      if (user) {
+        const curBal = Number(user.token_balance || 0);
+        const newBal = Math.max(0, curBal - costTokens);
+        await updateRows('auto_users', {
+          token_balance: newBal,
+          updated_at: now,
+        }, {
+          filters: { id: userId },
+        });
+      }
     } catch (tokenErr) {
       console.warn('Token consume error:', tokenErr);
     }

@@ -23,8 +23,8 @@ export async function GET(req: NextRequest) {
 
     // 퐁신제빵소 계정을 guest@automarketing.com으로 확실하게 동기화
     try {
-      const { executeSQL } = await import('@/lib/egdesk-helpers');
-      await executeSQL(`UPDATE auto_users SET email = 'guest@automarketing.com' WHERE id = 'usr_pongshin_master' OR email = 'pongshin.bakery@gmail.com'`);
+      const { updateRows } = await import('@/lib/egdesk-helpers');
+      await updateRows('auto_users', { email: 'guest@automarketing.com' }, { filters: { id: 'usr_pongshin_master' } });
     } catch {}
 
     // 1. 활성 사용자 조회 (기본: 퐁신제빵소 사장님)

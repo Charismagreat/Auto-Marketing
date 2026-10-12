@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { setupDatabase, queryTable } from '@/lib/setup-db';
-import { executeSQL } from '@/lib/egdesk-helpers';
+import { setupDatabase, queryTable, updateRows } from '@/lib/setup-db';
 
 export interface PromptConfig {
   id: string;
@@ -234,15 +233,21 @@ export async function PUT(req: Request) {
     const newVersion = versionParts.join('.');
     const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
 
-    const safeSystemPrompt = (systemPrompt ?? current?.system_prompt ?? '').replace(/'/g, "''");
-    const safeUserTemplate = (userPromptTemplate ?? current?.user_prompt_template ?? '').replace(/'/g, "''");
     const safeTemp = temperature !== undefined ? Number(temperature) : Number(current?.temperature || 0.7);
     const safeMaxTokens = maxTokens !== undefined ? Number(maxTokens) : Number(current?.max_tokens || 1024);
     const safeTopP = topP !== undefined ? Number(topP) : Number(current?.top_p || 0.9);
 
-    await executeSQL(
-      `UPDATE auto_prompt_templates SET system_prompt = '${safeSystemPrompt}', user_prompt_template = '${safeUserTemplate}', temperature = ${safeTemp}, max_tokens = ${safeMaxTokens}, top_p = ${safeTopP}, version = '${newVersion}', updated_at = '${now}' WHERE id = '${id}';`
-    );
+    await updateRows('auto_prompt_templates', {
+      system_prompt: systemPrompt ?? current?.system_prompt ?? '',
+      user_prompt_template: userPromptTemplate ?? current?.user_prompt_template ?? '',
+      temperature: safeTemp,
+      max_tokens: safeMaxTokens,
+      top_p: safeTopP,
+      version: newVersion,
+      updated_at: now,
+    }, {
+      filters: { id },
+    });
 
     return NextResponse.json({
       success: true,
@@ -256,3 +261,5 @@ export async function PUT(req: Request) {
     );
   }
 }
+
+export const POST = PUT;

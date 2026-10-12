@@ -43,3 +43,6 @@ next-env.d.ts
 # backups
 *.backup*
 *.egdesk-backup
+
+# temp scratch
+scratch/

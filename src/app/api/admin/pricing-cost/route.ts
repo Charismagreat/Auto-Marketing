@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { setupDatabase, queryTable } from '@/lib/setup-db';
-import { executeSQL } from '@/lib/egdesk-helpers';
+import { setupDatabase, queryTable, updateRows } from '@/lib/setup-db';
 
 export interface ModelCostConfig {
   id: string;
@@ -85,17 +84,26 @@ export async function PUT(req: Request) {
 
     if (Array.isArray(modelCosts)) {
       for (const m of modelCosts) {
-        await executeSQL(
-          `UPDATE auto_model_costs SET unit_cost = ${Number(m.unitCostKrw) || 0}, typical_calls = ${Number(m.typicalCallsPerBundle) || 1} WHERE id = '${m.id}';`
-        );
+        await updateRows('auto_model_costs', {
+          unit_cost: Number(m.unitCostKrw) || 0,
+          typical_calls: Number(m.typicalCallsPerBundle) || 1,
+        }, {
+          filters: { id: m.id },
+        });
       }
     }
 
     if (Array.isArray(plans)) {
       for (const p of plans) {
-        await executeSQL(
-          `UPDATE auto_pricing_plans SET monthly_price = ${Number(p.monthlyPriceKrw) || 0}, token_quota = ${Number(p.monthlyTokenQuota) || 0}, estimated_bundles = ${Number(p.estimatedBundles) || 0}, estimated_cost = ${Number(p.estimatedMonthlyCostKrw) || 0}, margin_rate = ${Number(p.marginRate) || 0} WHERE id = '${p.id}';`
-        );
+        await updateRows('auto_pricing_plans', {
+          monthly_price: Number(p.monthlyPriceKrw) || 0,
+          token_quota: Number(p.monthlyTokenQuota) || 0,
+          estimated_bundles: Number(p.estimatedBundles) || 0,
+          estimated_cost: Number(p.estimatedMonthlyCostKrw) || 0,
+          margin_rate: Number(p.marginRate) || 0,
+        }, {
+          filters: { id: p.id },
+        });
       }
     }
 

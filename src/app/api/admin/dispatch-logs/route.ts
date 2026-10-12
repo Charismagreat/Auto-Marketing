@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { setupDatabase, queryTable } from '@/lib/setup-db';
-import { executeSQL } from '@/lib/egdesk-helpers';
+import { setupDatabase, queryTable, updateRows, deleteRows } from '@/lib/setup-db';
 
 // 7대 마케팅 채널 디스패치 감사 로그 인터페이스
 export interface DispatchLog {
@@ -117,9 +116,20 @@ export async function POST(req: Request) {
     const { action, logId } = body;
 
     if (action === 'retry' && logId) {
-      await executeSQL(
-        `UPDATE auto_dispatch_logs SET status = 'SUCCESS', status_code = 200, error_message = '', retry_count = retry_count + 1, payload_summary = payload_summary || ' (관리자 원클릭 재시도 성공)' WHERE id = '${logId}';`
-      );
+      const existing = await queryTable('auto_dispatch_logs', { filters: { id: logId }, limit: 1 }).catch(() => ({ rows: [] }));
+      const log = existing.rows?.[0];
+      const currentRetry = Number(log?.retry_count || 0) + 1;
+      const currentSummary = (log?.payload_summary || '') + ' (관리자 원클릭 재시도 성공)';
+
+      await updateRows('auto_dispatch_logs', {
+        status: 'SUCCESS',
+        status_code: 200,
+        error_message: '',
+        retry_count: currentRetry,
+        payload_summary: currentSummary,
+      }, {
+        filters: { id: logId },
+      });
 
       return NextResponse.json({
         success: true,
@@ -144,7 +154,7 @@ export async function DELETE(req: Request) {
     const id = searchParams.get('id');
 
     if (id) {
-      await executeSQL(`DELETE FROM auto_dispatch_logs WHERE id = '${id}';`);
+      await deleteRows('auto_dispatch_logs', { filters: { id } });
       return NextResponse.json({ success: true, message: '로그가 DB에서 삭제되었습니다.' });
     }
 

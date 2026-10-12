@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { setupDatabase, queryTable, insertRows, updateRows } from '@/lib/setup-db';
-import { executeSQL } from '@/lib/egdesk-helpers';
 
 export async function GET(req: NextRequest) {
   try {

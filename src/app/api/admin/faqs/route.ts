@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { setupDatabase, queryTable, insertRows } from '@/lib/setup-db';
-import { executeSQL } from '@/lib/egdesk-helpers';
+import { setupDatabase, queryTable, insertRows, deleteRows } from '@/lib/setup-db';
 
 export interface FaqItem {
   id: string;
@@ -87,7 +86,7 @@ export async function DELETE(req: Request) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
     if (id) {
-      await executeSQL(`DELETE FROM auto_faqs WHERE id = '${id}';`);
+      await deleteRows('auto_faqs', { filters: { id } });
       return NextResponse.json({ success: true, message: 'FAQ가 DB에서 삭제되었습니다.' });
     }
     return NextResponse.json({ success: false, error: 'ID 누락' }, { status: 400 });

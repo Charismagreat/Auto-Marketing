@@ -21,6 +21,7 @@ import {
   Camera,
 } from 'lucide-react';
 import MediaPickerModal from '@/components/MediaPickerModal';
+import Footer from '@/components/Footer';
 
 export default function PrintStudioPage() {
   const [format, setFormat] = useState<'card' | 'flyer' | 'banner'>('card');
@@ -250,36 +251,36 @@ export default function PrintStudioPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col pb-16 sm:pb-0">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
       {/* 상단 툴바 */}
-      <header className="sticky top-0 z-30 bg-slate-800/90 backdrop-blur-md border-b border-slate-700 px-4 lg:px-8 py-3">
+      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 lg:px-8 py-3">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2 text-indigo-400 font-bold text-xs hover:text-indigo-300">
+            <Link href="/" className="flex items-center gap-2 text-indigo-600 font-bold text-xs hover:text-indigo-800 transition">
               <ArrowLeft className="w-4 h-4" />
               <span>대시보드</span>
             </Link>
-            <Link href="/library" className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-indigo-600/40 text-indigo-200 text-xs font-bold hover:bg-indigo-600/60 transition">
+            <Link href="/library" className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-indigo-50 text-indigo-700 text-xs font-bold hover:bg-indigo-100 transition border border-indigo-200">
               <span>📦 에셋 보관함</span>
             </Link>
-            <span className="text-slate-600">|</span>
+            <span className="text-slate-300">|</span>
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-pink-500/20 text-pink-400 flex items-center justify-center font-bold">
+              <div className="w-7 h-7 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center font-bold border border-pink-200/60">
                 <Printer className="w-4 h-4" />
               </div>
-              <span className="font-bold text-sm text-white">
+              <span className="font-extrabold text-sm text-slate-900">
                 인쇄물 스튜디오
               </span>
             </div>
 
             {/* DB 상품 선택 드롭다운 */}
             {products.length > 0 && (
-              <div className="flex items-center gap-2 ml-2 pl-3 border-l border-slate-700">
-                <Package className="w-3.5 h-3.5 text-amber-400" />
+              <div className="flex items-center gap-2 ml-2 pl-3 border-l border-slate-200">
+                <Package className="w-3.5 h-3.5 text-amber-600" />
                 <select
                   value={selectedProduct?.id || ''}
                   onChange={(e) => handleProductChange(e.target.value)}
-                  className="bg-slate-900 border border-slate-600 text-white text-xs rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+                  className="bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-pink-500 focus:outline-none"
                 >
                   {products.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -292,7 +293,7 @@ export default function PrintStudioPage() {
 
             <button
               onClick={() => setShowMediaPicker(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-600/80 hover:bg-amber-500 text-xs font-bold text-white transition-colors shadow-xs ml-2"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-xs font-bold text-white transition-colors shadow-xs ml-2"
             >
               <Camera className="w-3.5 h-3.5" />
               <span>📷 실물 사진 변경</span>
@@ -300,13 +301,13 @@ export default function PrintStudioPage() {
           </div>
 
           {/* 포맷 전환 탭 */}
-          <div className="flex items-center gap-1.5 bg-slate-700/80 p-1 rounded-2xl border border-slate-600">
+          <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl border border-slate-200">
             <button
               onClick={() => handleFormatChange('card')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 format === 'card'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'text-slate-300 hover:text-white'
+                  ? 'bg-indigo-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
               }`}
             >
               <CreditCard className="w-3.5 h-3.5" />
@@ -317,8 +318,8 @@ export default function PrintStudioPage() {
               onClick={() => handleFormatChange('flyer')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 format === 'flyer'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'text-slate-300 hover:text-white'
+                  ? 'bg-indigo-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
               }`}
             >
               <FileText className="w-3.5 h-3.5" />
@@ -329,8 +330,8 @@ export default function PrintStudioPage() {
               onClick={() => handleFormatChange('banner')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 format === 'banner'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'text-slate-300 hover:text-white'
+                  ? 'bg-indigo-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
               }`}
             >
               <Flag className="w-3.5 h-3.5" />
@@ -348,7 +349,7 @@ export default function PrintStudioPage() {
               {savingAsset ? (
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
               ) : saveSuccess ? (
-                <Check className="w-3.5 h-3.5 text-emerald-300" />
+                <Check className="w-3.5 h-3.5 text-emerald-200" />
               ) : (
                 <Save className="w-3.5 h-3.5" />
               )}
@@ -358,7 +359,7 @@ export default function PrintStudioPage() {
             <button
               onClick={handleDownloadPdf}
               disabled={downloadingPdf || !htmlCode}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-pink-600 hover:bg-pink-500 text-xs font-bold text-white transition-all shadow-md shadow-pink-600/30 disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-pink-600 hover:bg-pink-500 text-xs font-bold text-white transition-all shadow-xs disabled:opacity-50"
             >
               {downloadingPdf ? (
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -370,17 +371,17 @@ export default function PrintStudioPage() {
 
             <button
               onClick={() => window.print()}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-xs font-bold text-white transition-all shadow-xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 transition-all border border-slate-200"
             >
-              <Printer className="w-3.5 h-3.5 text-pink-400" />
+              <Printer className="w-3.5 h-3.5 text-pink-600" />
               <span>브라우저 인쇄</span>
             </button>
 
             <button
               onClick={handleCopy}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-xs font-bold text-white transition-all shadow-xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 transition-all border border-slate-200"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
               <span>{copied ? '복사 완료!' : '규격 코드 복사'}</span>
             </button>
           </div>
@@ -391,26 +392,26 @@ export default function PrintStudioPage() {
       <div className="flex-1 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 p-4 lg:p-6">
         
         {/* 좌측 AI 핀셋 수정 창 */}
-        <div className="lg:col-span-4 flex flex-col bg-slate-800 rounded-3xl border border-slate-700/80 p-5 shadow-xl h-[calc(100vh-100px)]">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-700 mb-4">
+        <div className="lg:col-span-4 flex flex-col bg-white rounded-3xl border border-slate-200 p-5 shadow-xs h-[calc(100vh-140px)]">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <h2 className="text-xs font-bold text-white uppercase tracking-wider">
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
                 실시간 핀셋 수정 (AI Co-pilot)
               </h2>
             </div>
             <button
               onClick={() => handleGenerate(format, business, selectedProduct)}
               disabled={loading}
-              className="text-[11px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 disabled:opacity-50"
+              className="text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 disabled:opacity-50 transition"
             >
               <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
               <span>재생성</span>
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto space-y-3 pr-1 text-xs text-slate-300">
-            <div className="p-3 rounded-2xl bg-slate-700/50 border border-slate-600/50 leading-relaxed">
+          <div className="flex-1 overflow-y-auto space-y-3 pr-1 text-xs text-slate-600">
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 leading-relaxed text-slate-700">
               🏪 <strong>매장 정보</strong>: {business?.name || '로딩 중...'} ({business?.category})
               <br />
               📦 <strong>선택 상품</strong>: {selectedProduct?.name || '시그니처'}
@@ -418,9 +419,9 @@ export default function PrintStudioPage() {
               🏷️ <strong>출력 포맷</strong>: {format === 'card' ? '명함 (90x50mm)' : format === 'banner' ? 'X배너 (600x1800mm)' : 'A4 전단지'}
             </div>
 
-            <div className="p-2.5 rounded-xl bg-pink-950/60 border border-pink-500/30 text-[11px] text-pink-200">
+            <div className="p-3 rounded-2xl bg-pink-50/70 border border-pink-200 text-[11px] text-pink-900">
               💡 <strong>인쇄물 핀셋 수정 예시:</strong>
-              <ul className="list-disc pl-4 mt-1 space-y-1">
+              <ul className="list-disc pl-4 mt-1.5 space-y-1 text-pink-800">
                 <li>"할인 쿠폰 금액을 2,000원으로 바꿔줘"</li>
                 <li>"오픈 이벤트 날짜를 '이번 주말까지'로 명시해줘"</li>
                 <li>"배경을 따뜻한 베이커리 우드 톤으로 바꿔줘"</li>
@@ -430,18 +431,18 @@ export default function PrintStudioPage() {
           </div>
 
           {/* 대화형 입력창 */}
-          <form onSubmit={handleTweak} className="mt-4 pt-3 border-t border-slate-700 flex gap-2">
+          <form onSubmit={handleTweak} className="mt-4 pt-3 border-t border-slate-100 flex gap-2">
             <input
               type="text"
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               placeholder="예: 뒷면에 오시는 길 약도 텍스트 추가해줘"
-              className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
+              className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:bg-white transition"
             />
             <button
               type="submit"
               disabled={tweaking || !chatInput.trim()}
-              className="px-3.5 py-2 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs flex items-center justify-center disabled:opacity-40 transition-colors"
+              className="px-3.5 py-2 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs flex items-center justify-center disabled:opacity-40 transition-colors shadow-xs"
             >
               {tweaking ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
             </button>
@@ -449,22 +450,22 @@ export default function PrintStudioPage() {
         </div>
 
         {/* 우측 인쇄물 실물 미리보기 캔버스 */}
-        <div className="lg:col-span-8 flex flex-col items-center bg-slate-950 rounded-3xl border border-slate-800 p-6 overflow-y-auto h-[calc(100vh-100px)]">
-          <div className="mb-4 text-xs font-semibold text-slate-400 flex items-center gap-2">
+        <div className="lg:col-span-8 flex flex-col items-center bg-slate-100/70 rounded-3xl border border-slate-200/80 p-6 overflow-y-auto h-[calc(100vh-140px)]">
+          <div className="mb-4 text-xs font-semibold text-slate-600 flex items-center gap-2">
             <span>300 DPI 인쇄 규격 실물 비율 미리보기</span>
-            <span className="text-[10px] px-2 py-0.5 bg-slate-800 rounded-full text-slate-300 font-mono">
+            <span className="text-[10px] px-2 py-0.5 bg-slate-200 rounded-full text-slate-700 font-mono font-bold">
               {format === 'card' ? '90 x 50 mm' : format === 'banner' ? '600 x 1800 mm' : '210 x 297 mm (A4)'}
             </span>
           </div>
 
           {loading ? (
             <div className="h-full flex flex-col items-center justify-center py-20 text-slate-400">
-              <RefreshCw className="w-8 h-8 animate-spin text-pink-500 mb-3" />
-              <span className="text-sm font-bold text-slate-400">인쇄물 레이아웃 구성 중...</span>
+              <RefreshCw className="w-8 h-8 animate-spin text-pink-600 mb-3" />
+              <span className="text-sm font-bold text-slate-600">인쇄물 레이아웃 구성 중...</span>
             </div>
           ) : (
             <div
-              className={`bg-white text-slate-900 overflow-hidden font-sans ${getContainerStyle()}`}
+              className={`bg-white text-slate-900 overflow-hidden font-sans border border-slate-200/80 ${getContainerStyle()}`}
               dangerouslySetInnerHTML={{ __html: htmlCode }}
             />
           )}
@@ -479,6 +480,11 @@ export default function PrintStudioPage() {
         onSelect={handleMediaSelect}
         title="인쇄용 대표 실물 사진 선택 및 업로드"
       />
+
+      {/* 글로벌 푸터 및 모바일 내비 안전 영역 */}
+      <div className="pb-16 sm:pb-0 mt-8">
+        <Footer />
+      </div>
     </div>
   );
 }

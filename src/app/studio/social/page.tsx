@@ -21,6 +21,7 @@ import {
   Save,
   Package,
 } from 'lucide-react';
+import Footer from '@/components/Footer';
 
 export default function SocialStudioPage() {
   const [activeTab, setActiveTab] = useState<'blog' | 'card' | 'karrot' | 'place'>('blog');
@@ -327,36 +328,36 @@ export default function SocialStudioPage() {
   const currentCard = slides[currentSlide];
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col pb-16 sm:pb-0">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
       {/* 상단 툴바 */}
-      <header className="sticky top-0 z-30 bg-slate-800/90 backdrop-blur-md border-b border-slate-700 px-4 lg:px-8 py-3">
+      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 lg:px-8 py-3">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2 text-indigo-400 font-bold text-xs hover:text-indigo-300">
+            <Link href="/" className="flex items-center gap-2 text-indigo-600 font-bold text-xs hover:text-indigo-800 transition">
               <ArrowLeft className="w-4 h-4" />
               <span>대시보드</span>
             </Link>
-            <Link href="/library" className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-indigo-600/40 text-indigo-200 text-xs font-bold hover:bg-indigo-600/60 transition">
+            <Link href="/library" className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-indigo-50 text-indigo-700 text-xs font-bold hover:bg-indigo-100 transition border border-indigo-200">
               <span>📦 에셋 보관함</span>
             </Link>
-            <span className="text-slate-600">|</span>
+            <span className="text-slate-300">|</span>
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+              <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold border border-emerald-200/60">
                 <FileText className="w-4 h-4" />
               </div>
-              <span className="font-bold text-sm text-white">
+              <span className="font-extrabold text-sm text-slate-900">
                 소셜 포스팅 스튜디오
               </span>
             </div>
 
             {/* DB 상품 선택 드롭다운 */}
             {products.length > 0 && (
-              <div className="flex items-center gap-2 ml-2 pl-3 border-l border-slate-700">
-                <Package className="w-3.5 h-3.5 text-amber-400" />
+              <div className="flex items-center gap-2 ml-2 pl-3 border-l border-slate-200">
+                <Package className="w-3.5 h-3.5 text-amber-600" />
                 <select
                   value={selectedProduct?.id || ''}
                   onChange={(e) => handleProductChange(e.target.value)}
-                  className="bg-slate-900 border border-slate-600 text-white text-xs rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  className="bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 >
                   {products.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -369,13 +370,13 @@ export default function SocialStudioPage() {
           </div>
 
           {/* 탭 전환 */}
-          <div className="flex items-center gap-1.5 bg-slate-700/80 p-1 rounded-2xl border border-slate-600">
+          <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl border border-slate-200">
             <button
               onClick={() => setActiveTab('blog')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 activeTab === 'blog'
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'text-slate-300 hover:text-white'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
               }`}
             >
               <FileText className="w-3.5 h-3.5" />
@@ -386,8 +387,8 @@ export default function SocialStudioPage() {
               onClick={() => setActiveTab('card')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 activeTab === 'card'
-                  ? 'bg-pink-600 text-white shadow-md'
-                  : 'text-slate-300 hover:text-white'
+                  ? 'bg-pink-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
               }`}
             >
               <Camera className="w-3.5 h-3.5" />
@@ -401,11 +402,11 @@ export default function SocialStudioPage() {
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 activeTab === 'karrot'
-                  ? 'bg-orange-500 text-white shadow-md shadow-orange-500/30'
-                  : 'text-orange-200 hover:text-white hover:bg-slate-700'
+                  ? 'bg-orange-500 text-white shadow-xs shadow-orange-500/20'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-200" />
+              <Sparkles className="w-3.5 h-3.5 text-orange-500" />
               <span>🥕 당근 비즈프로필 소식</span>
             </button>
 
@@ -416,11 +417,11 @@ export default function SocialStudioPage() {
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 activeTab === 'place'
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
-                  : 'text-emerald-200 hover:text-white hover:bg-slate-700'
+                  ? 'bg-emerald-600 text-white shadow-xs shadow-emerald-600/20'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 text-emerald-200" />
+              <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
               <span>🌿 플레이스 새소식</span>
             </button>
           </div>
@@ -435,7 +436,7 @@ export default function SocialStudioPage() {
               {savingAsset ? (
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
               ) : saveSuccess ? (
-                <Check className="w-3.5 h-3.5 text-emerald-300" />
+                <Check className="w-3.5 h-3.5 text-emerald-200" />
               ) : (
                 <Save className="w-3.5 h-3.5" />
               )}
@@ -449,7 +450,7 @@ export default function SocialStudioPage() {
                 target="_blank"
                 rel="noreferrer"
                 onClick={handleCopyContent}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-xs font-bold text-white transition-all shadow-md shadow-emerald-600/30"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-xs font-bold text-white transition-all shadow-xs"
                 title="본문을 복사하고 네이버 스마트플레이스 관리자 페이지를 엽니다"
               >
                 <Sparkles className="w-3.5 h-3.5 text-emerald-200" />
@@ -461,7 +462,7 @@ export default function SocialStudioPage() {
                 target="_blank"
                 rel="noreferrer"
                 onClick={handleCopyContent}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-xs font-bold text-white transition-all shadow-md shadow-orange-500/30"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-xs font-bold text-white transition-all shadow-xs"
                 title="본문을 클립보드에 복사하고 당근마켓 비즈프로필 관리자 페이지를 엽니다"
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-200" />
@@ -498,12 +499,12 @@ export default function SocialStudioPage() {
                     setPublishing(false);
                   }
                 }}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-xs font-bold text-white transition-all shadow-md shadow-amber-500/30 disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-xs font-bold text-white transition-all shadow-xs disabled:opacity-50"
               >
                 {publishing ? (
                   <RefreshCw className="w-3.5 h-3.5 animate-spin text-white" />
                 ) : (
-                  <Sparkles className="w-3.5 h-3.5 text-amber-200" />
+                  <Sparkles className="w-3.5 h-3.5 text-amber-100" />
                 )}
                 <span>
                   {publishing
@@ -518,7 +519,7 @@ export default function SocialStudioPage() {
             {/* 복사 버튼 */}
             <button
               onClick={handleCopyContent}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white transition-all shadow-md shadow-emerald-600/30"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white transition-all shadow-xs"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-white" /> : <Copy className="w-3.5 h-3.5" />}
               <span>{copied ? '복사 완료!' : activeTab === 'place' ? '플레이스 본문 복사' : activeTab === 'karrot' ? '당근 본문 복사' : activeTab === 'blog' ? '블로그 본문 복사' : 'JSON 복사'}</span>
@@ -531,30 +532,30 @@ export default function SocialStudioPage() {
       <div className="flex-1 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 p-4 lg:p-6">
         
         {/* 좌측: AI 핀셋 수정 창 */}
-        <div className="lg:col-span-4 flex flex-col bg-slate-800 rounded-3xl border border-slate-700/80 p-5 shadow-xl h-[calc(100vh-100px)]">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-700 mb-4">
+        <div className="lg:col-span-4 flex flex-col bg-white rounded-3xl border border-slate-200 p-5 shadow-xs h-[calc(100vh-140px)]">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <h2 className="text-xs font-bold text-white uppercase tracking-wider">
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
                 실시간 핀셋 수정 (AI Co-pilot)
               </h2>
             </div>
             <button
               onClick={() => (activeTab === 'blog' ? handleGenerateBlog() : handleGenerateCards())}
               disabled={loading}
-              className="text-[11px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 disabled:opacity-50"
+              className="text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 disabled:opacity-50 transition"
             >
               <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
               <span>재생성</span>
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto space-y-3 pr-1 text-xs text-slate-300">
+          <div className="flex-1 overflow-y-auto space-y-3 pr-1 text-xs text-slate-600">
             {activeTab === 'place' ? (
               <div className="space-y-3">
-                <div className="p-3 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-200">
+                <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900">
                   <span className="font-bold text-xs block mb-1">🌿 네이버 플레이스 새소식 템플릿</span>
-                  <p className="text-[11px] text-emerald-300/80">
+                  <p className="text-[11px] text-emerald-800">
                     네이버 지도 검색 유입을 극대화하는 3대 템플릿을 선택해 보세요:
                   </p>
                 </div>
@@ -574,21 +575,21 @@ export default function SocialStudioPage() {
                       }}
                       className={`p-3 rounded-xl border text-left transition-all ${
                         placeTemplate === t.id
-                          ? 'bg-emerald-500/20 border-emerald-500 text-white shadow-sm'
-                          : 'bg-slate-700/40 border-slate-700 text-slate-300 hover:border-slate-600'
+                          ? 'bg-emerald-50 border-emerald-500 text-emerald-950 shadow-xs'
+                          : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
                       }`}
                     >
-                      <div className="font-bold text-xs text-emerald-400">{t.label}</div>
-                      <div className="text-[11px] text-slate-400 mt-0.5">{t.desc}</div>
+                      <div className="font-bold text-xs text-emerald-700">{t.label}</div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">{t.desc}</div>
                     </button>
                   ))}
                 </div>
               </div>
             ) : activeTab === 'karrot' ? (
               <div className="space-y-3">
-                <div className="p-3 rounded-2xl bg-orange-950/40 border border-orange-500/30 text-orange-200">
+                <div className="p-3 rounded-2xl bg-orange-50 border border-orange-200 text-orange-950">
                   <span className="font-bold text-xs block mb-1">🥕 당근마켓 비즈프로필 소식 템플릿</span>
-                  <p className="text-[11px] text-orange-300/80">
+                  <p className="text-[11px] text-orange-800">
                     동네 이웃들의 주목도를 높이는 3대 테마 중 하나를 선택해 보세요:
                   </p>
                 </div>
@@ -608,19 +609,19 @@ export default function SocialStudioPage() {
                       }}
                       className={`p-3 rounded-xl border text-left transition-all ${
                         karrotTemplate === t.id
-                          ? 'bg-orange-500/20 border-orange-500 text-white shadow-sm'
-                          : 'bg-slate-700/40 border-slate-700 text-slate-300 hover:border-slate-600'
+                          ? 'bg-orange-50 border-orange-500 text-orange-950 shadow-xs'
+                          : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
                       }`}
                     >
-                      <div className="font-bold text-xs text-orange-400">{t.label}</div>
-                      <div className="text-[11px] text-slate-400 mt-0.5">{t.desc}</div>
+                      <div className="font-bold text-xs text-orange-600">{t.label}</div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">{t.desc}</div>
                     </button>
                   ))}
                 </div>
               </div>
             ) : (
               <>
-                <div className="p-3 rounded-2xl bg-slate-700/50 border border-slate-600/50 leading-relaxed">
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 leading-relaxed text-slate-700">
                   🏪 <strong>매장</strong>: {business?.name || '퐁신제빵소'} | 📦 <strong>선택 상품</strong>: {selectedProduct?.name || '카스테라'}
                   <br /><br />
                   ✍️ <strong>{activeTab === 'blog' ? '네이버 스마트블록 1위 최적화 블로그' : '인스타그램 6컷 캐러셀'}</strong> 초안이 생성되었습니다.
@@ -628,9 +629,9 @@ export default function SocialStudioPage() {
                   원하시는 말투나 강조하고 싶은 키워드를 채팅으로 편하게 말씀해 주세요.
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/30 text-[11px] text-emerald-200">
+                <div className="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200 text-[11px] text-emerald-900">
                   💡 <strong>핀셋 요청 예시:</strong>
-                  <ul className="list-disc pl-4 mt-1 space-y-1">
+                  <ul className="list-disc pl-4 mt-1.5 space-y-1 text-emerald-800">
                     <li>"주말 아이 간식 추천 키워드를 더 강조해줘"</li>
                     <li>"배곧 생명공원 피크닉 포장 팁을 추가해줘"</li>
                     <li>"글 끝부분에 네이버 플레이스 링크를 더 눈에 띄게 넣어줘"</li>
@@ -642,18 +643,18 @@ export default function SocialStudioPage() {
           </div>
 
           {/* 대화형 입력창 */}
-          <form onSubmit={handleTweak} className="mt-4 pt-3 border-t border-slate-700 flex gap-2">
+          <form onSubmit={handleTweak} className="mt-4 pt-3 border-t border-slate-100 flex gap-2">
             <input
               type="text"
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               placeholder="예: 조금 더 친근하고 이모지가 많은 말투로 바꿔줘"
-              className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition"
             />
             <button
               type="submit"
               disabled={tweaking || !chatInput.trim()}
-              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center disabled:opacity-40 transition-colors"
+              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center disabled:opacity-40 transition-colors shadow-xs"
             >
               {tweaking ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
             </button>
@@ -661,16 +662,16 @@ export default function SocialStudioPage() {
         </div>
 
         {/* 우측 캔버스 영역 */}
-        <div className="lg:col-span-8 flex flex-col bg-slate-950 rounded-3xl border border-slate-800 p-6 overflow-hidden h-[calc(100vh-100px)]">
+        <div className="lg:col-span-8 flex flex-col bg-slate-100/70 rounded-3xl border border-slate-200/80 p-6 overflow-hidden h-[calc(100vh-140px)]">
           {loading ? (
             <div className="h-full flex flex-col items-center justify-center py-20 text-slate-400">
-              <RefreshCw className="w-8 h-8 animate-spin text-emerald-500 mb-3" />
-              <span className="text-sm font-bold text-slate-400">콘텐츠 최적화 렌더링 중...</span>
+              <RefreshCw className="w-8 h-8 animate-spin text-emerald-600 mb-3" />
+              <span className="text-sm font-bold text-slate-600">콘텐츠 최적화 렌더링 중...</span>
             </div>
           ) : activeTab === 'place' ? (
             /* 🌿 네이버 스마트플레이스 모바일 UI 실물 뷰어 */
             <div className="flex-1 overflow-y-auto flex items-center justify-center p-2 sm:p-4">
-              <div className="w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200 text-slate-900 font-sans">
+              <div className="w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-xl border border-slate-200 text-slate-900 font-sans">
                 {/* 네이버 플레이스 상단 초록 헤더 */}
                 <div className="px-5 py-3 border-b border-emerald-600 flex items-center justify-between bg-[#03C75A] text-white">
                   <div className="flex items-center gap-2">
@@ -760,7 +761,7 @@ export default function SocialStudioPage() {
           ) : activeTab === 'karrot' ? (
             /* 🥕 당근마켓 비즈프로필 & 동네생활 피드 뷰어 */
             <div className="flex-1 overflow-y-auto flex items-center justify-center p-2 sm:p-4">
-              <div className="w-full max-w-md bg-white rounded-3xl text-slate-900 shadow-2xl border border-orange-200 overflow-hidden font-sans">
+              <div className="w-full max-w-md bg-white rounded-3xl text-slate-900 shadow-xl border border-orange-200 overflow-hidden font-sans">
                 {/* 당근 앱 상단 헤더 */}
                 <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-white">
                   <div className="flex items-center gap-2">
@@ -841,15 +842,15 @@ export default function SocialStudioPage() {
             </div>
           ) : activeTab === 'blog' ? (
             /* 네이버 블로그 스마트 뷰어 */
-            <div className="flex-1 overflow-y-auto bg-white rounded-2xl p-6 sm:p-8 text-slate-900 shadow-inner font-sans">
+            <div className="flex-1 overflow-y-auto bg-white rounded-2xl p-6 sm:p-8 text-slate-900 shadow-xs border border-slate-200/60 font-sans">
               <div className="max-w-2xl mx-auto space-y-4">
                 <div className="border-b border-slate-100 pb-3 flex items-center justify-between text-xs text-slate-500">
                   <span>네이버 블로그 스마트에디터 ONE 호환 뷰</span>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold">
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
                     검색 키워드: 시흥 배곧 맛집, 카스테라
                   </span>
                 </div>
-                <div className="prose prose-slate max-w-none text-xs sm:text-sm whitespace-pre-wrap leading-relaxed">
+                <div className="prose prose-slate max-w-none text-xs sm:text-sm whitespace-pre-wrap leading-relaxed text-slate-800">
                   {blogContent}
                 </div>
               </div>
@@ -857,9 +858,9 @@ export default function SocialStudioPage() {
           ) : (
             /* 인스타그램 1:1 카드뉴스 캐러셀 뷰어 */
             <div className="flex-1 flex flex-col items-center justify-center">
-              <div className="mb-4 text-xs font-semibold text-slate-400 flex items-center gap-2">
+              <div className="mb-4 text-xs font-semibold text-slate-600 flex items-center gap-2">
                 <span>인스타그램 1:1 캐러셀 피드 미리보기</span>
-                <span className="text-[10px] px-2 py-0.5 bg-slate-800 rounded-full text-slate-300 font-mono">
+                <span className="text-[10px] px-2 py-0.5 bg-slate-200 rounded-full text-slate-700 font-mono font-bold">
                   {currentSlide + 1} / {slides.length || 6}
                 </span>
               </div>
@@ -867,7 +868,7 @@ export default function SocialStudioPage() {
               {/* 1:1 카드뉴스 실물 뷰 */}
               {currentCard && (
                 <div
-                  className="w-[360px] h-[360px] sm:w-[420px] sm:h-[420px] rounded-3xl shadow-2xl p-8 flex flex-col justify-between transition-all duration-300 relative overflow-hidden"
+                  className="w-[360px] h-[360px] sm:w-[420px] sm:h-[420px] rounded-3xl shadow-xl p-8 flex flex-col justify-between transition-all duration-300 relative overflow-hidden border border-slate-200/40"
                   style={{ backgroundColor: currentCard.bgColor || '#1e293b', color: currentCard.textColor || '#ffffff' }}
                 >
                   <div className="flex items-center justify-between">
@@ -900,7 +901,7 @@ export default function SocialStudioPage() {
                 <button
                   onClick={() => setCurrentSlide((prev) => Math.max(0, prev - 1))}
                   disabled={currentSlide === 0}
-                  className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center disabled:opacity-30 shadow-md transition-colors"
+                  className="w-10 h-10 rounded-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 flex items-center justify-center disabled:opacity-30 shadow-xs transition-colors"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
@@ -910,8 +911,8 @@ export default function SocialStudioPage() {
                     <div
                       key={idx}
                       onClick={() => setCurrentSlide(idx)}
-                      className={`w-2.5 h-2.5 rounded-full cursor-pointer transition-all ${
-                        currentSlide === idx ? 'bg-pink-500 w-6' : 'bg-slate-700'
+                      className={`h-2.5 rounded-full cursor-pointer transition-all ${
+                        currentSlide === idx ? 'bg-pink-500 w-6' : 'bg-slate-300 w-2.5'
                       }`}
                     />
                   ))}
@@ -920,7 +921,7 @@ export default function SocialStudioPage() {
                 <button
                   onClick={() => setCurrentSlide((prev) => Math.min(slides.length - 1, prev + 1))}
                   disabled={currentSlide >= slides.length - 1}
-                  className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center disabled:opacity-30 shadow-md transition-colors"
+                  className="w-10 h-10 rounded-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 flex items-center justify-center disabled:opacity-30 shadow-xs transition-colors"
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>
@@ -929,6 +930,11 @@ export default function SocialStudioPage() {
           )}
         </div>
 
+      </div>
+
+      {/* 글로벌 푸터 및 모바일 내비 안전 영역 */}
+      <div className="pb-16 sm:pb-0 mt-8">
+        <Footer />
       </div>
     </div>
   );

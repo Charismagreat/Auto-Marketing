@@ -20,6 +20,7 @@ import {
   Camera,
 } from 'lucide-react';
 import MediaPickerModal from '@/components/MediaPickerModal';
+import Footer from '@/components/Footer';
 
 export default function DetailStudioPage() {
   const [loading, setLoading] = useState(false);
@@ -134,27 +135,27 @@ export default function DetailStudioPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col pb-16 sm:pb-0">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
       {/* 상단 툴바 */}
-      <header className="sticky top-0 z-30 bg-slate-800/90 backdrop-blur-md border-b border-slate-700 px-4 lg:px-8 py-3">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 lg:px-8 py-3">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2 text-indigo-400 font-bold text-xs hover:text-indigo-300">
+            <Link href="/" className="flex items-center gap-2 text-indigo-600 font-bold text-xs hover:text-indigo-800 transition">
               <ArrowLeft className="w-4 h-4" />
               <span>대시보드</span>
             </Link>
-            <Link href="/library" className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-indigo-600/40 text-indigo-200 text-xs font-bold hover:bg-indigo-600/60 transition">
+            <Link href="/library" className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-indigo-50 text-indigo-700 text-xs font-bold hover:bg-indigo-100 transition border border-indigo-200">
               <span>📦 에셋 보관함</span>
             </Link>
-            <span className="text-slate-600">|</span>
+            <span className="text-slate-300">|</span>
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+              <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold border border-amber-200/60">
                 <ShoppingBag className="w-4 h-4" />
               </div>
-              <span className="font-bold text-sm text-white">
+              <span className="font-extrabold text-sm text-slate-900">
                 {business?.name || '퐁신제빵소'} 상세페이지 (DB 연동)
               </span>
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold border border-emerald-500/30">
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200">
                 네이버/쿠팡 규격
               </span>
             </div>
@@ -169,7 +170,7 @@ export default function DetailStudioPage() {
                   const selectedProd = products.find((p) => p.id === newId);
                   if (selectedProd) handleGenerate(business, selectedProd);
                 }}
-                className="bg-slate-700 text-white text-xs px-2.5 py-1.5 rounded-xl border border-slate-600 font-medium"
+                className="bg-slate-50 text-slate-900 text-xs px-2.5 py-1.5 rounded-xl border border-slate-200 font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               >
                 {products.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -183,7 +184,7 @@ export default function DetailStudioPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowMediaPicker(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-600/80 hover:bg-amber-500 text-xs font-bold text-white transition-colors shadow-xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-xs font-bold text-white transition-colors shadow-xs"
             >
               <Camera className="w-3.5 h-3.5" />
               <span>📷 매장 실물 사진 적용</span>
@@ -191,9 +192,9 @@ export default function DetailStudioPage() {
 
             <button
               onClick={() => setViewMode(viewMode === 'preview' ? 'code' : 'preview')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-xs font-semibold text-slate-200 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 transition-colors border border-slate-200"
             >
-              {viewMode === 'preview' ? <Code className="w-3.5 h-3.5 text-indigo-400" /> : <Eye className="w-3.5 h-3.5 text-indigo-400" />}
+              {viewMode === 'preview' ? <Code className="w-3.5 h-3.5 text-indigo-600" /> : <Eye className="w-3.5 h-3.5 text-indigo-600" />}
               <span>{viewMode === 'preview' ? 'HTML 코드 보기' : '디자인 프리뷰'}</span>
             </button>
 
@@ -218,16 +219,16 @@ export default function DetailStudioPage() {
                   alert('저장 중 오류가 발생했습니다.');
                 }
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-xs font-bold text-white transition-all shadow-xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white transition-all shadow-xs"
             >
               <span>💾 에셋 저장</span>
             </button>
 
             <button
               onClick={handleCopy}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white transition-all shadow-md shadow-indigo-600/30"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white transition-all shadow-sm shadow-indigo-600/20"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-200" /> : <Copy className="w-3.5 h-3.5" />}
               <span>{copied ? '복사 완료!' : '스마트스토어 HTML 복사'}</span>
             </button>
           </div>
@@ -238,34 +239,34 @@ export default function DetailStudioPage() {
       <div className="flex-1 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 p-4 lg:p-6">
         
         {/* 좌측: AI 핀셋 수정 (Code-as-Asset 대화형 에디터) */}
-        <div className="lg:col-span-4 flex flex-col bg-slate-800 rounded-3xl border border-slate-700/80 p-5 shadow-xl h-[calc(100vh-100px)]">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-700 mb-4">
+        <div className="lg:col-span-4 flex flex-col bg-white rounded-3xl border border-slate-200 p-5 shadow-xs h-[calc(100vh-140px)]">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <h2 className="text-xs font-bold text-white uppercase tracking-wider">
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
                 대화형 핀셋 수정 (AI Co-pilot)
               </h2>
             </div>
             <button
               onClick={handleGenerate}
               disabled={loading}
-              className="text-[11px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 disabled:opacity-50"
+              className="text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 disabled:opacity-50 transition"
             >
               <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
               <span>전체 재생성</span>
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto space-y-3 pr-1 text-xs text-slate-300">
-            <div className="p-3 rounded-2xl bg-slate-700/50 border border-slate-600/50 leading-relaxed">
+          <div className="flex-1 overflow-y-auto space-y-3 pr-1 text-xs text-slate-600">
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 leading-relaxed text-slate-700">
               👋 안녕하세요 사장님! <strong>퐁신 오리지널 대만 카스테라</strong>의 860px 고전환 상세페이지가 실시간 생성되었습니다.
               <br /><br />
               마음에 안 드는 부분이나 추가하고 싶은 내용이 있다면 채팅으로 편하게 말씀해 주세요.
             </div>
 
-            <div className="p-2.5 rounded-xl bg-indigo-950/60 border border-indigo-500/30 text-[11px] text-indigo-200">
+            <div className="p-3 rounded-2xl bg-indigo-50/70 border border-indigo-200 text-[11px] text-indigo-900">
               💡 <strong>추천 핀셋 요청 예시:</strong>
-              <ul className="list-disc pl-4 mt-1 space-y-1">
+              <ul className="list-disc pl-4 mt-1.5 space-y-1 text-indigo-800">
                 <li>"가격 할인 배너를 더 굵고 강렬한 빨간색으로 바꿔줘"</li>
                 <li>"아이들 간식에 좋은 이유 3가지를 추가해줘"</li>
                 <li>"당일 발송 마감 시간을 오후 2시로 수정해줘"</li>
@@ -274,18 +275,18 @@ export default function DetailStudioPage() {
           </div>
 
           {/* 대화형 입력창 */}
-          <form onSubmit={handleTweak} className="mt-4 pt-3 border-t border-slate-700 flex gap-2">
+          <form onSubmit={handleTweak} className="mt-4 pt-3 border-t border-slate-100 flex gap-2">
             <input
               type="text"
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               placeholder="예: 보관법 섹션에 냉동 보관 꿀팁 추가해줘"
-              className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
             />
             <button
               type="submit"
               disabled={tweaking || !chatInput.trim()}
-              className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center disabled:opacity-40 transition-colors"
+              className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center disabled:opacity-40 transition-colors shadow-xs"
             >
               {tweaking ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
             </button>
@@ -293,9 +294,9 @@ export default function DetailStudioPage() {
         </div>
 
         {/* 우측: 860px 표준 규격 라이브 캔버스 프리뷰 */}
-        <div className="lg:col-span-8 flex flex-col bg-slate-950 rounded-3xl border border-slate-800 p-4 overflow-hidden h-[calc(100vh-100px)]">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800 px-2 mb-2">
-            <div className="flex items-center gap-2 text-xs text-slate-400">
+        <div className="lg:col-span-8 flex flex-col bg-slate-100/70 rounded-3xl border border-slate-200/80 p-4 overflow-hidden h-[calc(100vh-140px)]">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200 px-2 mb-2">
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
               <Smartphone className="w-4 h-4 text-slate-500" />
               <span>모바일/스마트스토어 860px 캔버스 뷰</span>
             </div>
@@ -304,7 +305,7 @@ export default function DetailStudioPage() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto bg-white rounded-2xl shadow-inner p-4 text-slate-900">
+          <div className="flex-1 overflow-y-auto bg-white rounded-2xl shadow-xs border border-slate-200/60 p-4 text-slate-900">
             {loading ? (
               <div className="h-full flex flex-col items-center justify-center py-20 text-slate-400">
                 <RefreshCw className="w-8 h-8 animate-spin text-indigo-500 mb-3" />
@@ -333,6 +334,11 @@ export default function DetailStudioPage() {
         onSelect={handleMediaSelect}
         title="카스테라 실물 사진 선택 및 업로드 (스토리지 연동)"
       />
+
+      {/* 글로벌 푸터 및 모바일 내비 안전 영역 */}
+      <div className="pb-16 sm:pb-0 mt-8">
+        <Footer />
+      </div>
     </div>
   );
 }

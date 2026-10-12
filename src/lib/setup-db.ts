@@ -6,7 +6,7 @@ import {
   callUserDataTool,
 } from './egdesk-helpers';
 
-export { queryTable, insertRows };
+export { queryTable, insertRows, executeSQL };
 
 let isDbInitialized = false;
 let dbInitPromise: Promise<void> | null = null;
@@ -189,6 +189,73 @@ async function seedInitialData() {
         answer: '에셋 보관함에서 [인쇄용 고해상도 PDF 다운로드] 버튼을 누르시면 300DPI 인쇄소 규격 CMYK 파일이 다운로드됩니다. 가까운 인쇄소에 바로 맡기시거나 매장 프린터로 즉시 출력하실 수 있습니다.',
         sort_order: 4,
         is_published: 1,
+        created_at: now,
+      },
+    ]).catch(console.error);
+  }
+
+  // 4-1. 벤치마크 레퍼런스 시드 (auto_references)
+  const refCheck = await queryTable('auto_references', { limit: 1 }).catch(() => ({ rows: [] }));
+  if (!refCheck.rows || refCheck.rows.length === 0) {
+    await insertRows('auto_references', [
+      {
+        id: 'ref_1',
+        business_id: 'biz_pongshin_baegot',
+        title: '조회수 120만! 대만 카스테라 커팅 탱글탱글 ASMR 숏폼',
+        url: 'https://youtube.com/shorts/TaiwanCastellaJiggle',
+        platform: 'youtube',
+        hook_dna: '단 0.5초 만에 시선 강탈하는 탱글한 흔들림 & 김 모락모락 모션',
+        layout_dna: '0~2초: 흔들림 훅 ➔ 3~8초: 생크림 주입 클로즈업 ➔ 9~15초: 매장 위치 & 당일 한정 수량 CTA',
+        tags: '유튜브쇼츠,카스테라,ASMR,탱글탱글,식감자극',
+        thumbnail_url: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80',
+        created_at: now,
+      },
+      {
+        id: 'ref_2',
+        business_id: 'biz_pongshin_baegot',
+        title: '저장수 3.8만 대박난 베이커리 6컷 캐러셀 카드뉴스',
+        url: 'https://instagram.com/p/BakeryStoryTellingCard',
+        platform: 'instagram',
+        hook_dna: '프랜차이즈 빵 대신 동네 수제 카스테라를 찾는 3가지 이유',
+        layout_dna: '1컷: 질문형 훅 ➔ 2~4컷: 무방부제/신선한 계란 공정 ➔ 5컷: 보관 꿀팁 ➔ 6컷: 오늘 나온 빵 예약 안내',
+        tags: '인스타릴스,카드뉴스,스토리텔링,동네빵집,수제카스테라',
+        thumbnail_url: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600&auto=format&fit=crop&q=80',
+        created_at: now,
+      },
+      {
+        id: 'ref_3',
+        business_id: 'biz_pongshin_baegot',
+        title: '네이버 스마트블록 1위 노출: 배곧 빵지순례 내돈내산 감성 리뷰',
+        url: 'https://blog.naver.com/foodie_review/castella_paradise',
+        platform: 'naver_blog',
+        hook_dna: '[시흥 배곧] 빵순이가 인정한 인생 카스테라 발견! 포장 패키지까지 완벽',
+        layout_dna: '외관/위치 안내 ➔ 시그니처 3종 실물 컷 ➔ 단면 자르는 움짤(GIF) ➔ 보관법 및 예약 꿀팁',
+        tags: '네이버블로그,플레이스상위노출,지역키워드,배곧맛집,선물추천',
+        thumbnail_url: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&auto=format&fit=crop&q=80',
+        created_at: now,
+      },
+      {
+        id: 'ref_4',
+        business_id: 'biz_pongshin_baegot',
+        title: '스마트스토어 디저트 1위! 구매전환율 8.4% 상세페이지',
+        url: 'https://smartstore.naver.com/best_dessert/products/castella_master',
+        platform: 'smartstore',
+        hook_dna: '택배 배송 시 부서지지 않는 특수 안심 에어팩 완충재 포장 사진을 전면에 배치하여 고객 불안을 해소합니다.',
+        layout_dna: '상단 3초 구매전환 훅 ➔ 안심 에어캡 3중 포장 인증 ➔ 당일 생산 발송 스케줄표 ➔ 단체주문 혜택',
+        tags: '상세페이지,스마트스토어,전환율최적화,카스테라택배',
+        thumbnail_url: 'https://images.unsplash.com/photo-1586985289688-ca3cf47d3e6e?w=600&auto=format&fit=crop&q=80',
+        created_at: now,
+      },
+      {
+        id: 'ref_5',
+        business_id: 'biz_pongshin_baegot',
+        title: '매출 30% 끌어올린 오픈 기념 전단지 & 픽업 명함 세트',
+        url: 'https://example.com/print/bakery_open_flyer',
+        platform: 'print',
+        hook_dna: '선착순 100명! 아메리카노 1,000원 + 오리지널 카스테라 1,000원 할인 쿠폰',
+        layout_dna: '상단: 대형 빵 비주얼 ➔ 중단: 3대 시그니처 소개 ➔ 하단: 절취선 할인 쿠폰 & 네이버 지도 QR코드',
+        tags: '전단지,명함,오픈이벤트,쿠폰동봉,지역타겟팅',
+        thumbnail_url: 'https://images.unsplash.com/photo-1517433670267-08bbd4be890f?w=600&auto=format&fit=crop&q=80',
         created_at: now,
       },
     ]).catch(console.error);
@@ -611,6 +678,67 @@ async function seedInitialData() {
       }
     ]).catch(console.error);
   }
+
+  // 15. 무통장 입금 요청 대장 시드 (auto_deposit_requests)
+  const depositCheck = await queryTable('auto_deposit_requests', { limit: 1 }).catch(() => ({ rows: [] }));
+  if (!depositCheck.rows || depositCheck.rows.length === 0) {
+    await insertRows('auto_deposit_requests', [
+      {
+        id: 'dep_sample_01',
+        deposit_code: '홍108',
+        depositor_name: '홍길동',
+        user_email: 'guest@automarketing.com',
+        user_name: '퐁신제빵소 사장님',
+        package_id: 'pkg_standard',
+        package_name: '스탠다드 성장팩 (150,000T)',
+        original_amount_krw: 12000,
+        discount_krw: 12,
+        amount_krw: 11988,
+        tokens_to_credit: 150000,
+        bank_name: '카카오뱅크',
+        account_number: '3333-12-1695965',
+        account_holder: '차호석',
+        phone_number: '010-1234-5678',
+        receipt_sent: 1,
+        receipt_sent_at: '2026-10-12 14:32:05',
+        status: 'COMPLETED',
+        actual_amount_krw: 11988,
+        hold_reason: '',
+        tx_hash: 'tx_kakao_10121432',
+        expires_at: '2026-10-12 15:30:00',
+        raw_sms: '[카카오뱅크] 10/12 14:31 3333-12-1695965 입금 11,988원 홍길동 잔액 1,234,000원',
+        matched_at: '2026-10-12 14:31:45',
+        created_at: '2026-10-12 14:28:10',
+      },
+      {
+        id: 'dep_sample_02',
+        deposit_code: '김429',
+        depositor_name: '김철수',
+        user_email: 'kim@bread.kr',
+        user_name: '달콤베이커리 점주',
+        package_id: 'pkg_pro',
+        package_name: '프로 바이럴팩 (450,000T)',
+        original_amount_krw: 30000,
+        discount_krw: 24,
+        amount_krw: 29976,
+        tokens_to_credit: 450000,
+        bank_name: '카카오뱅크',
+        account_number: '3333-12-1695965',
+        account_holder: '차호석',
+        phone_number: '010-9876-5432',
+        receipt_sent: 0,
+        receipt_sent_at: '',
+        status: 'PENDING',
+        actual_amount_krw: 0,
+        hold_reason: '',
+        tx_hash: '',
+        expires_at: new Date(Date.now() + 3600 * 1000).toISOString(),
+        raw_sms: '',
+        matched_at: '',
+        created_at: new Date().toISOString(),
+      }
+    ]).catch(console.error);
+  }
 }
 
 /**
@@ -673,6 +801,7 @@ export async function setupDatabase(force = false) {
       { name: 'hook_dna', type: 'TEXT' },
       { name: 'layout_dna', type: 'TEXT' },
       { name: 'tags', type: 'TEXT' },
+      { name: 'thumbnail_url', type: 'TEXT' },
       { name: 'created_at', type: 'TEXT' },
     ], { tableName: 'auto_references' });
 
@@ -893,11 +1022,40 @@ export async function setupDatabase(force = false) {
       { name: 'updated_at', type: 'TEXT' },
     ], { tableName: 'auto_footer_configs' });
 
+    // 20. auto_deposit_requests (무통장 입금 감지 & 토큰 자동 충전 대장)
+    await safeCreateTable('Auto-Marketing 무통장 입금 자동 감지 및 충전 대장', [
+      { name: 'id', type: 'TEXT', notNull: true, primaryKey: true },
+      { name: 'deposit_code', type: 'TEXT', notNull: true },
+      { name: 'depositor_name', type: 'TEXT' },
+      { name: 'user_email', type: 'TEXT', notNull: true },
+      { name: 'user_name', type: 'TEXT' },
+      { name: 'package_id', type: 'TEXT', notNull: true },
+      { name: 'package_name', type: 'TEXT', notNull: true },
+      { name: 'original_amount_krw', type: 'INTEGER' },
+      { name: 'discount_krw', type: 'INTEGER' },
+      { name: 'amount_krw', type: 'INTEGER', notNull: true },
+      { name: 'tokens_to_credit', type: 'INTEGER', notNull: true },
+      { name: 'bank_name', type: 'TEXT' },
+      { name: 'account_number', type: 'TEXT' },
+      { name: 'account_holder', type: 'TEXT' },
+      { name: 'phone_number', type: 'TEXT' },
+      { name: 'receipt_sent', type: 'INTEGER' },
+      { name: 'receipt_sent_at', type: 'TEXT' },
+      { name: 'status', type: 'TEXT', notNull: true }, // 'PENDING', 'COMPLETED', 'HOLD', 'CANCELLED'
+      { name: 'actual_amount_krw', type: 'INTEGER' },
+      { name: 'hold_reason', type: 'TEXT' },
+      { name: 'tx_hash', type: 'TEXT' },
+      { name: 'expires_at', type: 'TEXT' },
+      { name: 'raw_sms', type: 'TEXT' },
+      { name: 'matched_at', type: 'TEXT' },
+      { name: 'created_at', type: 'TEXT' },
+    ], { tableName: 'auto_deposit_requests' });
+
     // 시드 데이터 주입
     await seedInitialData();
 
     isDbInitialized = true;
-    console.log('[Auto-Marketing] ✅ 18대 통합 데이터베이스 초기화 및 시드 주입 완료!');
+    console.log('[Auto-Marketing] ✅ 19대 통합 데이터베이스 초기화 및 시드 주입 완료!');
   })();
 
   return dbInitPromise;

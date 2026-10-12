@@ -54,6 +54,7 @@ import AdminPricingCostTab from './components/AdminPricingCostTab';
 import AdminTaxInvoicesTab from './components/AdminTaxInvoicesTab';
 import AdminFooterTab from './components/AdminFooterTab';
 import AdminFaqsTab from './components/AdminFaqsTab';
+import AdminDepositAgentSection from '@/components/admin/AdminDepositAgentSection';
 
 // 15대 관제 탭을 비즈니스 도메인별 5대 핵심 카테고리로 체계화
 const TAB_GROUPS = [
@@ -677,32 +678,50 @@ export default function AdminPage() {
                 </h3>
 
                 <div className="space-y-2.5 text-xs">
-                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-                    <div>
-                      <span className="font-extrabold text-slate-900 block">무료 웰컴 체험 (Free)</span>
-                      <span className="text-[11px] text-slate-500">가입 즉시 50,000T 무료 지급 (숏폼 5편, 상세페이지 5편)</span>
+                  {data?.pricingPlans && data.pricingPlans.length > 0 ? (
+                    data.pricingPlans.map((plan: any) => {
+                      const isFree = Number(plan.monthly_price) === 0;
+                      const isPro = plan.id === 'plan-pro';
+                      return (
+                        <div
+                          key={plan.id}
+                          className={`p-3.5 rounded-xl border flex items-center justify-between ${
+                            isPro
+                              ? 'bg-indigo-50/50 border-indigo-200'
+                              : 'bg-slate-50 border-slate-200'
+                          }`}
+                        >
+                          <div>
+                            <span className="font-extrabold text-slate-900 block">{plan.name}</span>
+                            <span className="text-[11px] text-slate-500">
+                              월 {Number(plan.token_quota).toLocaleString()}T + 번들 약 {plan.estimated_bundles}회 제작 (마진율 {plan.margin_rate}%)
+                            </span>
+                          </div>
+                          <span
+                            className={`font-mono font-bold px-2 py-0.5 rounded-full border ${
+                              isFree
+                                ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                                : isPro
+                                ? 'text-indigo-700 bg-indigo-100/70 border-indigo-200'
+                                : 'text-slate-900 bg-slate-200/70 border-slate-300'
+                            }`}
+                          >
+                            {isFree ? '0원' : `월 ${Number(plan.monthly_price).toLocaleString()}원`}
+                          </span>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="p-4 text-center text-slate-400 text-xs">
+                      등록된 요금제 플랜이 없습니다.
                     </div>
-                    <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">0원</span>
-                  </div>
-
-                  <div className="p-3.5 rounded-xl bg-indigo-50/50 border border-indigo-200 flex items-center justify-between">
-                    <div>
-                      <span className="font-extrabold text-indigo-900 block">소상공인 스타터 (Starter)</span>
-                      <span className="text-[11px] text-slate-500">매월 200,000T + 주간 마케팅 오토 캘린더 자동 발행</span>
-                    </div>
-                    <span className="font-mono font-bold text-indigo-700 bg-indigo-100/70 px-2 py-0.5 rounded-full border border-indigo-200">월 39,000원</span>
-                  </div>
-
-                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-                    <div>
-                      <span className="font-extrabold text-slate-900 block">오토파일럿 프로 (Pro)</span>
-                      <span className="text-[11px] text-slate-500">무제한 상세페이지 + 숏폼 비디오 50편 + 인쇄물 무제한</span>
-                    </div>
-                    <span className="font-mono font-bold text-slate-900 bg-slate-200/70 px-2 py-0.5 rounded-full">월 79,000원</span>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
+
+            {/* Agent M 실시간 무통장 입금 자동 감지 엔진 & 토큰 대장 */}
+            <AdminDepositAgentSection />
           </div>
         )}
 

@@ -46,6 +46,14 @@ export async function GET() {
       console.warn('Query campaigns error:', e);
     }
 
+    let pricingPlans: any[] = [];
+    try {
+      const plRes = await queryTable('auto_pricing_plans', { limit: 20 });
+      pricingPlans = Array.isArray(plRes) ? plRes : plRes?.rows || [];
+    } catch (e) {
+      console.warn('Query pricing plans error:', e);
+    }
+
     try {
       const mRes = await queryTable('auto_media', { limit: 100 });
       mediaList = Array.isArray(mRes) ? mRes : mRes?.rows || [];
@@ -53,16 +61,31 @@ export async function GET() {
       console.warn('Query media error:', e);
     }
 
-    // 2. 관리자 종합 KPI 통계 (신규 추가된 엔진들 완벽 반영)
+    // 2. 실제 DB 기반 토큰 지갑 및 소비 집계
+    const totalTokensIssued = users.reduce((sum, u) => sum + Number(u.token_balance || 0), 0);
+    let totalTokensConsumed = 0;
+    try {
+      const logRes = await executeSQL('SELECT SUM(tokens_used) as total FROM ai_token_usage_logs;');
+      totalTokensConsumed = Number(logRes.rows?.[0]?.total || 0);
+    } catch {}
+
+    const totalAssets = assets.length || 1;
+    const videoCount = assets.filter((a) => a.type === 'video').length;
+    const detailCount = assets.filter((a) => a.type === 'detail').length;
+    const printCount = assets.filter((a) => a.type === 'print').length;
+    const socialCount = assets.filter((a) => a.type === 'card' || a.type === 'blog' || a.type === 'instagram').length;
+    const karrotCount = assets.filter((a) => a.type === 'karrot').length;
+    const placeCount = assets.filter((a) => a.type === 'naver_place').length;
+
     const stats = {
-      totalUsers: users.length || 1,
-      totalBusinesses: businesses.length || 1,
-      totalProducts: products.length || 3,
-      totalAssetsGenerated: assets.length || 24,
+      totalUsers: users.length,
+      totalBusinesses: businesses.length,
+      totalProducts: products.length,
+      totalAssetsGenerated: assets.length,
       totalCampaigns: campaigns.length,
       totalMediaStored: mediaList.length,
-      totalTokensIssued: 150000,
-      totalTokensConsumed: 38400,
+      totalTokensIssued,
+      totalTokensConsumed,
       activeModelStatus: {
         brain: { name: 'gemini-3.8-flash (AI 디렉터)', status: 'Healthy', latency: '420ms', successRate: '99.9%' },
         image: { name: 'gemini-3.1-flash-image (Nano Banana 2)', status: 'Healthy', latency: '1.8s', successRate: '99.5%' },
@@ -75,12 +98,12 @@ export async function GET() {
         bundle: { name: '7대 채널 올인원 1-Click 병렬 번들 엔진', status: 'Healthy', latency: '57s', successRate: '100%' },
       },
       engineUsageRatio: [
-        { name: '15초 숏폼 비디오 & TTS', count: assets.filter(a => a.type === 'video').length || 12, ratio: '28%' },
-        { name: '쇼핑몰 860px 상세페이지', count: assets.filter(a => a.type === 'detail').length || 8, ratio: '22%' },
-        { name: '300 DPI 인쇄물 (명함/전단지)', count: assets.filter(a => a.type === 'print').length || 5, ratio: '15%' },
-        { name: '인스타 카드뉴스 & 네이버 블로그', count: assets.filter(a => a.type === 'card' || a.type === 'blog').length || 4, ratio: '15%' },
-        { name: '당근마켓 비즈프로필 소식', count: assets.filter(a => a.type === 'karrot').length || 2, ratio: '10%' },
-        { name: '네이버 스마트플레이스 새소식/쿠폰', count: assets.filter(a => a.type === 'naver_place').length || 2, ratio: '10%' },
+        { name: '15초 숏폼 비디오 & TTS', count: videoCount, ratio: `${Math.round((videoCount / totalAssets) * 100)}%` },
+        { name: '쇼핑몰 860px 상세페이지', count: detailCount, ratio: `${Math.round((detailCount / totalAssets) * 100)}%` },
+        { name: '300 DPI 인쇄물 (명함/전단지)', count: printCount, ratio: `${Math.round((printCount / totalAssets) * 100)}%` },
+        { name: '인스타 카드뉴스 & 네이버 블로그', count: socialCount, ratio: `${Math.round((socialCount / totalAssets) * 100)}%` },
+        { name: '당근마켓 비즈프로필 소식', count: karrotCount, ratio: `${Math.round((karrotCount / totalAssets) * 100)}%` },
+        { name: '네이버 스마트플레이스 새소식/쿠폰', count: placeCount, ratio: `${Math.round((placeCount / totalAssets) * 100)}%` },
       ],
     };
 
@@ -93,6 +116,7 @@ export async function GET() {
       assets,
       campaigns,
       mediaList,
+      pricingPlans,
     });
   } catch (error: any) {
     console.error('Admin overview error:', error);

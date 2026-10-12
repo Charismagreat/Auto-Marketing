@@ -23,8 +23,10 @@ import {
   PlusCircle,
   HelpCircle,
   ArrowRight,
+  Zap,
 } from 'lucide-react';
 import Footer from '@/components/Footer';
+import DirectDepositModal from '@/components/DirectDepositModal';
 
 interface BundleData {
   user: any;
@@ -43,6 +45,7 @@ export default function DashboardPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [referenceUrl, setReferenceUrl] = useState('');
   const [showAppModal, setShowAppModal] = useState(false);
+  const [showDepositModal, setShowDepositModal] = useState(false);
 
   // 🚀 1-Click 마케팅 풀 패키지 번들 생성 상태
   const [selectedBundleProdId, setSelectedBundleProdId] = useState<string>('');
@@ -116,13 +119,24 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* 토큰 지갑 잔액 */}
-            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 border border-amber-200/70 text-amber-900 shadow-xs">
-              <Wallet className="w-4 h-4 text-amber-600" />
-              <span className="text-xs font-medium text-amber-700">체험 토큰</span>
-              <span className="text-xs font-bold text-amber-950 font-mono">
-                {data?.user?.token_balance?.toLocaleString() || '50,000'} T
-              </span>
+            {/* 토큰 지갑 잔액 & 충전 버튼 */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200/70 text-amber-900 shadow-xs">
+                <Wallet className="w-4 h-4 text-amber-600" />
+                <span className="text-xs font-medium text-amber-700">체험 토큰</span>
+                <span className="text-xs font-bold text-amber-950 font-mono">
+                  {data?.user?.token_balance?.toLocaleString() || '50,000'} T
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowDepositModal(true)}
+                className="px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-bold shadow-xs hover:shadow transition-all flex items-center gap-1 cursor-pointer"
+                title="무통장 입금으로 토큰 즉시 충전 (Agent M 자동 감지)"
+              >
+                <Zap className="w-3.5 h-3.5" />
+                <span>충전</span>
+              </button>
             </div>
 
             {/* 사용자 프로필 */}
@@ -639,6 +653,18 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* 4. 다이렉트 무통장 입금 감지 토큰 충전 모달 (Agent M) */}
+      <DirectDepositModal
+        isOpen={showDepositModal}
+        userEmail={data?.user?.email || 'guest@automarketing.com'}
+        userName={data?.user?.name || '퐁신제빵소 사장님'}
+        initialBalance={data?.user?.token_balance || 50000}
+        onClose={() => setShowDepositModal(false)}
+        onSuccess={() => {
+          fetchBootstrap();
+        }}
+      />
     </div>
   );
 }

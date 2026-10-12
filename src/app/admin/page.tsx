@@ -33,6 +33,10 @@ import {
   MessageSquare,
   Smartphone,
   Zap,
+  DollarSign,
+  FileCheck2,
+  HelpCircle,
+  Building2,
 } from 'lucide-react';
 import AdminDispatchLogsTab from './components/AdminDispatchLogsTab';
 import AdminPromptsTab from './components/AdminPromptsTab';
@@ -40,10 +44,14 @@ import AdminProposalModal from './components/AdminProposalModal';
 import AdminInquiriesTab from './components/AdminInquiriesTab';
 import AdminSmsTab from './components/AdminSmsTab';
 import AdminSmartRulesTab from './components/AdminSmartRulesTab';
+import AdminPricingCostTab from './components/AdminPricingCostTab';
+import AdminTaxInvoicesTab from './components/AdminTaxInvoicesTab';
+import AdminFooterTab from './components/AdminFooterTab';
+import AdminFaqsTab from './components/AdminFaqsTab';
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<
-    'users' | 'tokens' | 'assets' | 'campaigns' | 'dispatch' | 'prompts' | 'inquiries' | 'sms' | 'rules' | 'cms' | 'system'
+    'users' | 'tokens' | 'pricing' | 'tax' | 'assets' | 'campaigns' | 'dispatch' | 'prompts' | 'inquiries' | 'sms' | 'rules' | 'faqs' | 'footer' | 'cms' | 'system'
   >('users');
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -237,6 +245,30 @@ export default function AdminPage() {
           </button>
 
           <button
+            onClick={() => setActiveTab('pricing')}
+            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
+              activeTab === 'pricing'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            <DollarSign className="w-4 h-4" />
+            <span>3. AI 원가 & 마진율</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('tax')}
+            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
+              activeTab === 'tax'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            <FileCheck2 className="w-4 h-4" />
+            <span>4. 세무 & 전자세금계산서</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('assets')}
             className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
               activeTab === 'assets'
@@ -245,7 +277,7 @@ export default function AdminPage() {
             }`}
           >
             <FileCheck className="w-4 h-4" />
-            <span>3. 생성 에셋 통합 감사</span>
+            <span>5. 생성 에셋 통합 감사</span>
           </button>
 
           <button
@@ -257,7 +289,7 @@ export default function AdminPage() {
             }`}
           >
             <Calendar className="w-4 h-4" />
-            <span>4. 주간 오토파일럿 & 발행 큐</span>
+            <span>6. 주간 오토파일럿 & 발행 큐</span>
           </button>
 
           <button
@@ -269,7 +301,7 @@ export default function AdminPage() {
             }`}
           >
             <Radio className="w-4 h-4" />
-            <span>5. 외부 채널 디스패치 로그</span>
+            <span>7. 외부 채널 디스패치 로그</span>
           </button>
 
           <button
@@ -281,7 +313,7 @@ export default function AdminPage() {
             }`}
           >
             <Sliders className="w-4 h-4" />
-            <span>6. AI 프롬프트 튜닝</span>
+            <span>8. AI 프롬프트 튜닝</span>
           </button>
 
           <button
@@ -293,7 +325,7 @@ export default function AdminPage() {
             }`}
           >
             <MessageSquare className="w-4 h-4" />
-            <span>7. 점주 CS 문의 & AI 답변</span>
+            <span>9. 점주 CS 문의 & AI 답변</span>
           </button>
 
           <button
@@ -305,7 +337,7 @@ export default function AdminPage() {
             }`}
           >
             <Smartphone className="w-4 h-4" />
-            <span>8. SMS / 알림톡 발송</span>
+            <span>10. SMS / 알림톡 발송</span>
           </button>
 
           <button
@@ -317,7 +349,31 @@ export default function AdminPage() {
             }`}
           >
             <Zap className="w-4 h-4" />
-            <span>9. 스마트 자동화 룰</span>
+            <span>11. 스마트 자동화 룰</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('faqs')}
+            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
+              activeTab === 'faqs'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            <HelpCircle className="w-4 h-4" />
+            <span>12. 자주 묻는 질문 FAQ</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('footer')}
+            className={`flex items-center gap-2 px-4 py-3 font-bold text-xs rounded-2xl transition-all whitespace-nowrap ${
+              activeTab === 'footer'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            <Building2 className="w-4 h-4" />
+            <span>13. 사업자 정보 & 법무 약관</span>
           </button>
 
           <button
@@ -329,7 +385,7 @@ export default function AdminPage() {
             }`}
           >
             <Compass className="w-4 h-4" />
-            <span>10. 바이럴 레퍼런스 CMS</span>
+            <span>14. 바이럴 레퍼런스 CMS</span>
           </button>
 
           <button
@@ -341,7 +397,7 @@ export default function AdminPage() {
             }`}
           >
             <Cpu className="w-4 h-4" />
-            <span>11. AI 모델 믹스 & 인프라</span>
+            <span>15. AI 모델 믹스 & 인프라</span>
           </button>
         </div>
 
@@ -492,7 +548,33 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 탭 3: 생성 에셋 통합 감사 */}
+        {/* 탭 3: AI 모델 원가 & SaaS 마진율 시뮬레이터 (신규) */}
+        {activeTab === 'pricing' && (
+          <div className="space-y-4">
+            <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl mb-4">
+              <h2 className="text-base font-extrabold text-white">AI 모델 호출 원가 & SaaS 마진율 시뮬레이터</h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Gemini, Flux, TTS 등 AI 엔진 호출 원가 대비 점주 결제액을 분석하여 초고수익 마진율(87%+)과 월간 순이익을 시뮬레이션합니다.
+              </p>
+            </div>
+            <AdminPricingCostTab />
+          </div>
+        )}
+
+        {/* 탭 4: 세무 & 전자세금계산서 정산 관리 (신규) */}
+        {activeTab === 'tax' && (
+          <div className="space-y-4">
+            <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl mb-4">
+              <h2 className="text-base font-extrabold text-white">세무/정산 및 전자세금계산서 관리</h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                유료 결제 점주님들의 사업자등록증 기반 전자세금계산서 발급 및 국세청 홈택스 승인 번호 전송 내역을 관리합니다.
+              </p>
+            </div>
+            <AdminTaxInvoicesTab />
+          </div>
+        )}
+
+        {/* 탭 5: 생성 에셋 통합 감사 */}
         {activeTab === 'assets' && (
           <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl space-y-6">
             <div className="flex items-center justify-between">
@@ -675,7 +757,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 탭 9: 스마트 디스패치 자동화 규칙 엔진 (신규) */}
+        {/* 탭 11: 스마트 디스패치 자동화 규칙 엔진 */}
         {activeTab === 'rules' && (
           <div className="space-y-4">
             <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl mb-4">
@@ -688,7 +770,33 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 탭 10: 벤치마크 레퍼런스 CMS */}
+        {/* 탭 12: 자주 묻는 질문(FAQ) CMS (신규) */}
+        {activeTab === 'faqs' && (
+          <div className="space-y-4">
+            <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl mb-4">
+              <h2 className="text-base font-extrabold text-white">소상공인 자주 묻는 질문(FAQ) CMS</h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                점주들이 스스로 문제를 해결할 수 있도록 채널 연동, 요금/환불, 인쇄 관련 가이드 Q&A를 등록 및 관리합니다.
+              </p>
+            </div>
+            <AdminFaqsTab />
+          </div>
+        )}
+
+        {/* 탭 13: 사업자 정보 & 법무 약관 CMS (신규) */}
+        {activeTab === 'footer' && (
+          <div className="space-y-4">
+            <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl mb-4">
+              <h2 className="text-base font-extrabold text-white">사업자 정보 & 법무 약관 (이용약관/개인정보/환불) CMS</h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                통신판매업 필수 고지 정보, 이용약관, 개인정보처리방침, 환불 규정을 코드 배포 없이 실시간 수정합니다.
+              </p>
+            </div>
+            <AdminFooterTab />
+          </div>
+        )}
+
+        {/* 탭 14: 벤치마크 레퍼런스 CMS */}
         {activeTab === 'cms' && (
           <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl space-y-6">
             <div className="flex items-center justify-between">
@@ -724,7 +832,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 탭 11: AI 모델 믹스 & 시스템 인프라 */}
+        {/* 탭 15: AI 모델 믹스 & 시스템 인프라 */}
         {activeTab === 'system' && (
           <div className="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/80 shadow-xl space-y-6">
             <div className="flex items-center justify-between">
